@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Task Sorter | Which tasks should you delegate to AI?</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:wght@400&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #dd722a;
+            --black: #0e0906;
+            --background: #fefaec;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --shadow: rgba(14, 9, 6, 0.1);
+            --green: #2d6a4f;
+            --green-light: #d8f3dc;
+            --amber: #b8860b;
+            --amber-light: #fff3cd;
+            --red: #9b2c2c;
+            --red-light: #fee2e2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: var(--background);
+            color: var(--black);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-family: 'DM Serif Text', serif;
+            font-size: 2rem;
+            color: var(--black);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-family: 'DM Serif Text', serif;
+            font-size: 1.3rem;
+            color: var(--black);
+            margin-bottom: 16px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .input-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 32px;
+        }
+
+        .task-input-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 1rem;
+            border: 2px solid #e0d8c8;
+            border-radius: 8px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #c5631f;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--light-gray);
+            color: var(--black);
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .questions {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .questions.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-group {
+            margin-bottom: 24px;
+        }
+
+        .question-label {
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            background: var(--light-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            background: #e8e8e8;
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: #fff8f4;
+        }
+
+        .option input {
+            display: none;
+        }
+
+        .option-marker {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .option.selected .option-marker {
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+
+        .option.selected .option-marker::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .current-task {
+            background: #fff8f4;
+            border: 1px solid #f0e0d0;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .current-task span {
+            color: var(--primary);
+        }
+
+        .button-row {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        /* Results Section */
+        .results-section {
+            margin-top: 40px;
+        }
+
+        .category {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px var(--shadow);
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .category-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .category.green .category-dot { background: var(--green); }
+        .category.amber .category-dot { background: var(--amber); }
+        .category.red .category-dot { background: var(--red); }
+
+        .category.green .category-header h2 { color: var(--green); }
+        .category.amber .category-header h2 { color: var(--amber); }
+        .category.red .category-header h2 { color: var(--red); }
+
+        .category-description {
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .task-list {
+            list-style: none;
+        }
+
+        .task-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .category.green .task-item { background: var(--green-light); }
+        .category.amber .task-item { background: var(--amber-light); }
+        .category.red .task-item { background: var(--red-light); }
+
+        .task-item:hover {
+            transform: translateX(4px);
+        }
+
+        .task-name {
+            font-weight: 500;
+        }
+
+        .remove-task {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 1.2rem;
+            line-height: 1;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .remove-task:hover {
+            background: rgba(0,0,0,0.1);
+            color: #666;
+        }
+
+        .empty-state {
+            color: #999;
+            font-style: italic;
+            padding: 8px 0;
+        }
+
+        /* Export section */
+        .export-section {
+            text-align: center;
+            margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid #e0d8c8;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #e0d8c8;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .task-input-row {
+                flex-direction: column;
+            }
+
+            .button-row {
+                flex-direction: column;
+            }
+
+            .export-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body { background: white; }
+            .input-section, .export-section, .footer { display: none; }
+            .container { padding: 0; }
+            .category { box-shadow: none; border: 1px solid #ddd; }
+            .remove-task { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Task Sorter</h1>
+        <p class="subtitle">Enter your regular tasks and discover which ones AI can help with</p>
+
+        <div class="input-section">
+            <div id="taskEntry">
+                <h2>What tasks take up your time?</h2>
+                <div class="task-input-row">
+                    <input type="text" id="taskInput" class="task-input" placeholder="e.g. Writing meeting summaries, Drafting proposals, Pricing decisions..." autofocus>
+                    <button class="btn btn-primary" onclick="startSorting()">Sort this task</button>
+                </div>
+            </div>
+
+            <div id="questions" class="questions">
+                <div class="current-task">Sorting: <span id="currentTaskName"></span></div>
+
+                <div class="question-group">
+                    <label class="question-label">1. What happens if this task has an error or isn't quite right?</label>
+                    <div class="options" id="q1Options">
+                        <label class="option" onclick="selectOption(this, 'q1', 1)">
+                            <input type="radio" name="q1" value="1">
+                            <span class="option-marker"></span>
+                            <span>Minor inconvenience — easy to fix, low stakes</span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'q1', 2)">
+                            <input type="radio" name="q1" value="2">
+                            <span class="option-marker"></span>
+                            <span>Could cause problems — might affect credibility or require rework</span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'q1', 3)">
+                            <input type="radio" name="q1" value="3">
+                            <span class="option-marker"></span>
+                            <span>Serious consequences — legal, financial, or reputational damage</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <label class="question-label">2. Who sees the final output?</label>
+                    <div class="options" id="q2Options">
+                        <label class="option" onclick="selectOption(this, 'q2', 1)">
+                            <input type="radio" name="q2" value="1">
+                            <span class="option-marker"></span>
+                            <span>Just me or my internal team</span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'q2', 2)">
+                            <input type="radio" name="q2" value="2">
+                            <span class="option-marker"></span>
+                            <span>Clients or external stakeholders</span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'q2', 3)">
+                            <input type="radio" name="q2" value="3">
+                            <span class="option-marker"></span>
+                            <span>Could be quoted publicly or go on record</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <label class="question-label">3. How much does this require your personal judgement or voice?</label>
+                    <div class="options" id="q3Options">
+                        <label class="option" onclick="selectOption(this, 'q3', 1)">
+                            <input type="radio" name="q3" value="1">
+                            <span class="option-marker"></span>
+                            <span>Not much — it's fairly routine or templated</span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'q3', 2)">
+                            <input type="radio" name="q3" value="2">
+                            <span class="option-marker"></span>
+                            <span>Somewhat — needs to sound like me or reflect my thinking</span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'q3', 3)">
+                            <input type="radio" name="q3" value="3">
+                            <span class="option-marker"></span>
+                            <span>Entirely — this is where my expertise and trust matter most</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button class="btn btn-primary" onclick="categorizeTask()">Categorize task</button>
+                    <button class="btn btn-secondary" onclick="cancelSorting()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="category green">
+                <div class="category-header">
+                    <span class="category-dot"></span>
+                    <h2>Green — Let AI handle the first draft</h2>
+                </div>
+                <p class="category-description">Low risk, high repeatability. AI drafts, you review briefly, move on.</p>
+                <ul class="task-list" id="greenTasks">
+                    <li class="empty-state">No tasks yet</li>
+                </ul>
+            </div>
+
+            <div class="category amber">
+                <div class="category-header">
+                    <span class="category-dot"></span>
+                    <h2>Amber — AI assists, you supervise</h2>
+                </div>
+                <p class="category-description">Worth accelerating, but apply the Layer and Loop method: layer your judgement, loop once to tighten, then stop.</p>
+                <ul class="task-list" id="amberTasks">
+                    <li class="empty-state">No tasks yet</li>
+                </ul>
+            </div>
+
+            <div class="category red">
+                <div class="category-header">
+                    <span class="category-dot"></span>
+                    <h2>Red — Keep human ownership</h2>
+                </div>
+                <p class="category-description">Trust is the product. AI can support your thinking, but shouldn't drive. The final words should be yours.</p>
+                <ul class="task-list" id="redTasks">
+                    <li class="empty-state">No tasks yet</li>
+                </ul>
+            </div>
+
+            <div class="export-section" id="exportSection" style="display: none;">
+                <p style="margin-bottom: 16px; color: #666;">Save your sorted task list</p>
+                <div class="export-buttons">
+                    <button class="btn btn-secondary" onclick="exportAsText()">Download as text</button>
+                    <button class="btn btn-secondary" onclick="window.print()">Print / Save as PDF</button>
+                    <button class="btn btn-secondary" onclick="clearAllTasks()">Start over</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Part of the <a href="index.html">AI GOLD Toolkit</a> · <a href="ai-decision-guide.html">Read the full Decision Guide</a></p>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentTask = '';
+        let answers = { q1: null, q2: null, q3: null };
+        let tasks = { green: [], amber: [], red: [] };
+
+        // Load saved tasks from localStorage
+        function loadTasks() {
+            const saved = localStorage.getItem('aiTaskSorter');
+            if (saved) {
+                tasks = JSON.parse(saved);
+                renderAllTasks();
+            }
+        }
+
+        // Save tasks to localStorage
+        function saveTasks() {
+            localStorage.setItem('aiTaskSorter', JSON.stringify(tasks));
+        }
+
+        // Start sorting a new task
+        function startSorting() {
+            const input = document.getElementById('taskInput');
+            const taskName = input.value.trim();
+
+            if (!taskName) {
+                input.focus();
+                return;
+            }
+
+            currentTask = taskName;
+            document.getElementById('currentTaskName').textContent = taskName;
+
+            // Reset answers
+            answers = { q1: null, q2: null, q3: null };
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+
+            // Show questions
+            document.getElementById('taskEntry').style.display = 'none';
+            document.getElementById('questions').classList.add('active');
+        }
+
+        // Select an option
+        function selectOption(element, question, value) {
+            // Remove selected from siblings
+            element.parentNode.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+
+            // Select this option
+            element.classList.add('selected');
+            answers[question] = value;
+        }
+
+        // Cancel sorting
+        function cancelSorting() {
+            document.getElementById('questions').classList.remove('active');
+            document.getElementById('taskEntry').style.display = 'block';
+            document.getElementById('taskInput').value = '';
+            document.getElementById('taskInput').focus();
+        }
+
+        // Categorize the task based on answers
+        function categorizeTask() {
+            if (!answers.q1 || !answers.q2 || !answers.q3) {
+                alert('Please answer all three questions to categorize this task.');
+                return;
+            }
+
+            const score = answers.q1 + answers.q2 + answers.q3;
+            let category;
+
+            // Score ranges from 3-9
+            // 3-4: Green (low risk)
+            // 5-6: Amber (moderate risk)
+            // 7-9: Red (high risk)
+
+            // But also: any single answer of 3 bumps to at least amber
+            // Two answers of 3 or any "serious consequences" answer bumps to red
+
+            if (answers.q1 === 3 || (answers.q2 === 3 && answers.q3 === 3)) {
+                category = 'red';
+            } else if (score >= 7 || answers.q2 === 3) {
+                category = 'red';
+            } else if (score >= 5 || answers.q1 === 2 || answers.q2 === 2) {
+                category = 'amber';
+            } else {
+                category = 'green';
+            }
+
+            // Add to appropriate list
+            tasks[category].push(currentTask);
+            saveTasks();
+            renderAllTasks();
+
+            // Reset and show entry again
+            cancelSorting();
+        }
+
+        // Render all task lists
+        function renderAllTasks() {
+            renderTaskList('green');
+            renderTaskList('amber');
+            renderTaskList('red');
+
+            // Show/hide export section
+            const totalTasks = tasks.green.length + tasks.amber.length + tasks.red.length;
+            document.getElementById('exportSection').style.display = totalTasks > 0 ? 'block' : 'none';
+        }
+
+        // Render a single task list
+        function renderTaskList(category) {
+            const list = document.getElementById(category + 'Tasks');
+            const categoryTasks = tasks[category];
+
+            if (categoryTasks.length === 0) {
+                list.innerHTML = '<li class="empty-state">No tasks yet</li>';
+                return;
+            }
+
+            list.innerHTML = categoryTasks.map((task, index) => `
+                <li class="task-item">
+                    <span class="task-name">${escapeHtml(task)}</span>
+                    <button class="remove-task" onclick="removeTask('${category}', ${index})" title="Remove task">&times;</button>
+                </li>
+            `).join('');
+        }
+
+        // Remove a task
+        function removeTask(category, index) {
+            tasks[category].splice(index, 1);
+            saveTasks();
+            renderAllTasks();
+        }
+
+        // Clear all tasks
+        function clearAllTasks() {
+            if (confirm('Remove all tasks and start over?')) {
+                tasks = { green: [], amber: [], red: [] };
+                saveTasks();
+                renderAllTasks();
+            }
+        }
+
+        // Export as text
+        function exportAsText() {
+            let text = 'AI TASK SORTER RESULTS\n';
+            text += '======================\n\n';
+
+            text += 'GREEN — Let AI handle the first draft\n';
+            text += '--------------------------------------\n';
+            if (tasks.green.length) {
+                tasks.green.forEach(t => text += '• ' + t + '\n');
+            } else {
+                text += '(No tasks)\n';
+            }
+
+            text += '\nAMBER — AI assists, you supervise (Layer and Loop)\n';
+            text += '--------------------------------------------------\n';
+            if (tasks.amber.length) {
+                tasks.amber.forEach(t => text += '• ' + t + '\n');
+            } else {
+                text += '(No tasks)\n';
+            }
+
+            text += '\nRED — Keep human ownership\n';
+            text += '--------------------------\n';
+            if (tasks.red.length) {
+                tasks.red.forEach(t => text += '• ' + t + '\n');
+            } else {
+                text += '(No tasks)\n';
+            }
+
+            text += '\n\nGenerated by AI Task Sorter\n';
+            text += 'Part of the AI GOLD Toolkit\n';
+
+            // Download
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ai-task-sorter-results.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Handle Enter key in input
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startSorting();
+            }
+        });
+
+        // Load saved tasks on page load
+        loadTasks();
+    </script>
+</body>
+</html>
