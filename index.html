@@ -65,6 +65,25 @@
             margin: 0 auto;
         }
 
+        .resource-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 24px;
+            font-size: 0.95rem;
+            color: var(--black);
+            text-decoration: none;
+            border: 1px solid #d0c8b8;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .resource-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--white);
+        }
+
         .navigation {
             display: flex;
             justify-content: center;
@@ -399,6 +418,7 @@
         <div class="header">
             <h1>AI GOLD Framework</h1>
             <p class="subtitle">Your practical toolkit for purposeful networking. Be the calm voice in the noisy networking space.</p>
+            <a href="ai-decision-guide.html" class="resource-link">Read: AI Decision Guide for Founders & Directors</a>
         </div>
 
         <div class="navigation">
