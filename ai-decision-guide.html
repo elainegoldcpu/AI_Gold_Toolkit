@@ -184,6 +184,31 @@
             text-decoration: none;
         }
 
+        .download-btn {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--white);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .download-btn:hover {
+            background: #c5631f;
+            transform: translateY(-1px);
+        }
+
+        .download-row {
+            text-align: right;
+            margin-bottom: 24px;
+        }
+
         /* Print styles for PDF generation */
         @media print {
             body {
@@ -226,6 +251,10 @@
             .footer {
                 display: none;
             }
+
+            .download-btn {
+                display: none;
+            }
         }
 
         @page {
@@ -238,6 +267,10 @@
     <div class="container">
         <h1>A Short AI Decision Guide for Founders & Directors</h1>
         <p class="subtitle">Thinking support for the decisions you're already making</p>
+
+        <div class="download-row">
+            <button class="download-btn" onclick="window.print()">Download as PDF</button>
+        </div>
 
         <div class="opening">
             <p>You don't need another tutorial on prompts. You need a way to think clearly about where AI fits in your organisation—and where it doesn't.</p>
