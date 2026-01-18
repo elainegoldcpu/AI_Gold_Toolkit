@@ -396,14 +396,39 @@
         .results-header {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: var(--white);
-            padding: 30px;
+            padding: 40px 30px;
             text-align: center;
+        }
+
+        .results-header .logo-container {
+            margin-bottom: 20px;
+        }
+
+        .results-header .logo-icon {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 12px;
+        }
+
+        .results-header .brand-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.95;
+            margin-bottom: 4px;
+        }
+
+        .results-header .brand-website {
+            font-size: 0.8125rem;
+            opacity: 0.85;
         }
 
         .results-header h1 {
             color: var(--white);
             font-size: 1.75rem;
             margin-bottom: 8px;
+            margin-top: 20px;
         }
 
         .results-meta {
@@ -500,25 +525,33 @@
         .results-footer {
             background: var(--text-dark);
             color: var(--white);
-            padding: 24px 30px;
+            padding: 30px;
             text-align: center;
+        }
+
+        .results-footer .footer-logo {
+            width: 40px;
+            height: 40px;
+            margin-bottom: 12px;
         }
 
         .results-footer .company-name {
             font-weight: 600;
-            font-size: 1rem;
+            font-size: 1.125rem;
             margin-bottom: 4px;
         }
 
         .results-footer .tagline {
             font-size: 0.875rem;
             opacity: 0.8;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            font-style: italic;
         }
 
         .results-footer .contact-links {
             font-size: 0.875rem;
             opacity: 0.9;
+            line-height: 1.8;
         }
 
         .results-footer a {
@@ -1002,8 +1035,30 @@
         <div class="screen" id="screen-results">
             <div class="results-container" id="resultsContainer">
                 <div class="results-header">
+                    <div class="logo-container">
+                        <svg class="logo-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Top pill -->
+                            <rect x="42" y="5" width="16" height="32" rx="8" fill="white"/>
+                            <!-- Bottom pill -->
+                            <rect x="42" y="63" width="16" height="32" rx="8" fill="white"/>
+                            <!-- Left pill -->
+                            <rect x="5" y="42" width="32" height="16" rx="8" fill="white"/>
+                            <!-- Right pill -->
+                            <rect x="63" y="42" width="32" height="16" rx="8" fill="white"/>
+                            <!-- Top-right diagonal -->
+                            <rect x="67" y="12" width="8" height="24" rx="4" fill="white" transform="rotate(45 71 24)"/>
+                            <!-- Top-left diagonal -->
+                            <rect x="25" y="12" width="8" height="24" rx="4" fill="white" transform="rotate(-45 29 24)"/>
+                            <!-- Bottom-right diagonal -->
+                            <rect x="67" y="64" width="8" height="24" rx="4" fill="white" transform="rotate(-45 71 76)"/>
+                            <!-- Bottom-left diagonal -->
+                            <rect x="25" y="64" width="8" height="24" rx="4" fill="white" transform="rotate(45 29 76)"/>
+                        </svg>
+                        <div class="brand-name">Elaine Gold Consulting</div>
+                        <div class="brand-website">www.elainegold.co.uk</div>
+                    </div>
                     <h1>Your AI Confidence &amp; Capability Report</h1>
-                    <p class="results-meta"><span id="results-name"></span> | <span id="results-date"></span></p>
+                    <p class="results-meta">Prepared for <strong><span id="results-name"></span></strong> | <span id="results-date"></span></p>
                 </div>
                 <div class="results-body">
                     <!-- Section 1: Your Situation -->
@@ -1083,12 +1138,30 @@
                     </div>
                 </div>
                 <div class="results-footer">
+                    <svg class="footer-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Top pill -->
+                        <rect x="42" y="5" width="16" height="32" rx="8" fill="#dd722a"/>
+                        <!-- Bottom pill -->
+                        <rect x="42" y="63" width="16" height="32" rx="8" fill="#dd722a"/>
+                        <!-- Left pill -->
+                        <rect x="5" y="42" width="32" height="16" rx="8" fill="#dd722a"/>
+                        <!-- Right pill -->
+                        <rect x="63" y="42" width="32" height="16" rx="8" fill="#dd722a"/>
+                        <!-- Top-right diagonal -->
+                        <rect x="67" y="12" width="8" height="24" rx="4" fill="#dd722a" transform="rotate(45 71 24)"/>
+                        <!-- Top-left diagonal -->
+                        <rect x="25" y="12" width="8" height="24" rx="4" fill="#dd722a" transform="rotate(-45 29 24)"/>
+                        <!-- Bottom-right diagonal -->
+                        <rect x="67" y="64" width="8" height="24" rx="4" fill="#dd722a" transform="rotate(-45 71 76)"/>
+                        <!-- Bottom-left diagonal -->
+                        <rect x="25" y="64" width="8" height="24" rx="4" fill="#dd722a" transform="rotate(45 29 76)"/>
+                    </svg>
                     <div class="company-name">Elaine Gold Consulting</div>
                     <div class="tagline">AI + Human Connection for founders, small businesses and teams</div>
                     <div class="contact-links">
                         <a href="https://www.elainegold.co.uk" target="_blank">www.elainegold.co.uk</a> |
                         <a href="mailto:elaine@elainegold.co.uk">elaine@elainegold.co.uk</a><br>
-                        <a href="https://linkedin.com/in/elainegold" target="_blank">linkedin.com/in/elainegold</a>
+                        <a href="https://linkedin.com/in/elainegold" target="_blank">LinkedIn: elainegold</a>
                     </div>
                 </div>
             </div>
