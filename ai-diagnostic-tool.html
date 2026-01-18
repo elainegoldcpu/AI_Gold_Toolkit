@@ -758,7 +758,7 @@
 
         <!-- Question 1: Current Confidence -->
         <div class="screen" id="screen-q1">
-            <div class="progress-text">Question 1 of 6</div>
+            <div class="progress-text">Question 1 of 7</div>
             <div class="question-header">
                 <div class="question-number">Question 1</div>
                 <h2 class="question-text">How confident are you using AI in your work right now?</h2>
@@ -794,7 +794,7 @@
 
         <!-- Question 2: Biggest Challenge -->
         <div class="screen" id="screen-q2">
-            <div class="progress-text">Question 2 of 6</div>
+            <div class="progress-text">Question 2 of 7</div>
             <div class="question-header">
                 <div class="question-number">Question 2</div>
                 <h2 class="question-text">What's your biggest challenge with AI?</h2>
@@ -834,7 +834,7 @@
 
         <!-- Question 3: Frequency -->
         <div class="screen" id="screen-q3">
-            <div class="progress-text">Question 3 of 6</div>
+            <div class="progress-text">Question 3 of 7</div>
             <div class="question-header">
                 <div class="question-number">Question 3</div>
                 <h2 class="question-text">How often do you use AI tools?</h2>
@@ -870,7 +870,7 @@
 
         <!-- Question 4: What Would Help Most -->
         <div class="screen" id="screen-q4">
-            <div class="progress-text">Question 4 of 6</div>
+            <div class="progress-text">Question 4 of 7</div>
             <div class="question-header">
                 <div class="question-number">Question 4</div>
                 <h2 class="question-text">What would help you most right now?</h2>
@@ -910,7 +910,7 @@
 
         <!-- Question 5: Guidelines in Place -->
         <div class="screen" id="screen-q5">
-            <div class="progress-text">Question 5 of 6</div>
+            <div class="progress-text">Question 5 of 7</div>
             <div class="question-header">
                 <div class="question-number">Question 5</div>
                 <h2 class="question-text">Do you have AI guidelines or policies in place?</h2>
@@ -946,7 +946,7 @@
 
         <!-- Question 6: Specific Opportunity -->
         <div class="screen" id="screen-q6">
-            <div class="progress-text">Question 6 of 6</div>
+            <div class="progress-text">Question 6 of 7</div>
             <div class="question-header">
                 <div class="question-number">Question 6</div>
                 <h2 class="question-text">What's one area where AI could save you time or improve quality?</h2>
@@ -956,13 +956,40 @@
                     id="q6-text"
                     placeholder="e.g., client communication, content creation, admin tasks, proposals..."
                     maxlength="500"
-                    oninput="updateCharCount(this)"
+                    oninput="updateCharCount(this, 'charCount')"
                 ></textarea>
                 <div class="char-count"><span id="charCount">0</span>/500 characters</div>
             </div>
             <div class="btn-group">
                 <button class="btn btn-secondary" onclick="goToScreen('q5')">Back</button>
-                <button class="btn btn-primary" onclick="submitAssessment()" id="btn-q6">
+                <button class="btn btn-primary" onclick="goToQ7()" id="btn-q6">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Question 7: Questions for Elaine -->
+        <div class="screen" id="screen-q7">
+            <div class="progress-text">Question 7 of 7</div>
+            <div class="question-header">
+                <div class="question-number">Question 7</div>
+                <h2 class="question-text">Any questions or specific business topics relating to AI you'd like to discuss with Elaine?</h2>
+            </div>
+            <div class="form-group">
+                <textarea
+                    id="q7-text"
+                    placeholder="e.g., How can I use AI for client onboarding? What tools would suit my team? How do I get buy-in from leadership?"
+                    maxlength="500"
+                    oninput="updateCharCount(this, 'charCount7')"
+                ></textarea>
+                <div class="char-count"><span id="charCount7">0</span>/500 characters</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToScreen('q6')">Back</button>
+                <button class="btn btn-primary" onclick="submitAssessment()" id="btn-q7">
                     See My Results
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="9 18 15 12 9 6"></polyline>
@@ -1126,17 +1153,19 @@
             q3: '',
             q4: '',
             q5: '',
-            q6: ''
+            q6: '',
+            q7: ''
         };
 
         const progressSteps = {
             'welcome': 0,
-            'q1': 16.67,
-            'q2': 33.33,
-            'q3': 50,
-            'q4': 66.67,
-            'q5': 83.33,
-            'q6': 100,
+            'q1': 14.29,
+            'q2': 28.57,
+            'q3': 42.86,
+            'q4': 57.14,
+            'q5': 71.43,
+            'q6': 85.71,
+            'q7': 100,
             'results': 100
         };
 
@@ -1246,9 +1275,9 @@
         // ============================================
         // Character Counter
         // ============================================
-        function updateCharCount(textarea) {
+        function updateCharCount(textarea, counterId = 'charCount') {
             const count = textarea.value.length;
-            const countEl = document.getElementById('charCount');
+            const countEl = document.getElementById(counterId);
             countEl.textContent = count;
 
             if (count > 450) {
@@ -1259,10 +1288,19 @@
         }
 
         // ============================================
+        // Navigate to Q7
+        // ============================================
+        function goToQ7() {
+            responses.q6 = document.getElementById('q6-text').value.trim();
+            goToScreen('q7');
+        }
+
+        // ============================================
         // Submit Assessment
         // ============================================
         function submitAssessment() {
             responses.q6 = document.getElementById('q6-text').value.trim();
+            responses.q7 = document.getElementById('q7-text').value.trim();
 
             // Save to localStorage
             saveResponse(responses);
@@ -1484,7 +1522,8 @@
                 'Q3 - Frequency',
                 'Q4 - What Would Help',
                 'Q5 - Guidelines',
-                'Q6 - Opportunity Area'
+                'Q6 - Opportunity Area',
+                'Q7 - Questions for Elaine'
             ];
 
             const roleLabels = {
@@ -1543,7 +1582,8 @@
                 q3Labels[r.q3] || r.q3,
                 q4Labels[r.q4] || r.q4,
                 q5Labels[r.q5] || r.q5,
-                r.q6 || ''
+                r.q6 || '',
+                r.q7 || ''
             ]);
 
             const csvContent = [
@@ -1575,13 +1615,16 @@
                 q3: '',
                 q4: '',
                 q5: '',
-                q6: ''
+                q6: '',
+                q7: ''
             };
 
             // Reset form fields
             document.getElementById('welcomeForm').reset();
             document.getElementById('q6-text').value = '';
             document.getElementById('charCount').textContent = '0';
+            document.getElementById('q7-text').value = '';
+            document.getElementById('charCount7').textContent = '0';
 
             // Deselect all options
             document.querySelectorAll('.option-card').forEach(card => {
