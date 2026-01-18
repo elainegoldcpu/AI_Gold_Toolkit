@@ -1,0 +1,1624 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Confidence & Capability Check | Elaine Gold Consulting</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary: #dd722a;
+            --primary-dark: #c45f1f;
+            --primary-light: #e8915a;
+            --background: #fefaec;
+            --text-dark: #2d3748;
+            --text-medium: #4a5568;
+            --text-light: #718096;
+            --grey-light: #e2e8f0;
+            --grey-medium: #a0aec0;
+            --teal: #319795;
+            --teal-light: #38b2ac;
+            --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--background);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--grey-light);
+            z-index: 100;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-top: 20px;
+            padding-top: 10px;
+        }
+
+        /* Screen Styles */
+        .screen {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            flex: 1;
+            padding-top: 30px;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Welcome Screen */
+        .welcome-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 30px;
+            letter-spacing: 0.5px;
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            font-size: 1.125rem;
+            color: var(--text-medium);
+            margin-bottom: 8px;
+        }
+
+        .time-estimate {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.875rem;
+            color: var(--text-light);
+            background: var(--white);
+            padding: 8px 16px;
+            border-radius: 20px;
+            margin-top: 16px;
+        }
+
+        .time-estimate svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        label .required {
+            color: var(--primary);
+        }
+
+        label .optional {
+            color: var(--text-light);
+            font-weight: 400;
+            font-size: 0.875rem;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 14px 16px;
+            font-size: 1rem;
+            border: 2px solid var(--grey-light);
+            border-radius: 10px;
+            background: var(--white);
+            color: var(--text-dark);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            font-family: inherit;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(221, 114, 42, 0.1);
+        }
+
+        input.error,
+        select.error {
+            border-color: #e53e3e;
+        }
+
+        .error-message {
+            color: #e53e3e;
+            font-size: 0.875rem;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 44px;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .char-count {
+            text-align: right;
+            font-size: 0.8125rem;
+            color: var(--text-light);
+            margin-top: 6px;
+        }
+
+        .char-count.warning {
+            color: var(--primary);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--text-medium);
+            border: 2px solid var(--grey-light);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--grey-medium);
+            color: var(--text-dark);
+        }
+
+        .btn-teal {
+            background: var(--teal);
+            color: var(--white);
+        }
+
+        .btn-teal:hover {
+            background: var(--teal-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        .btn-full {
+            width: 100%;
+            margin-top: 24px;
+        }
+
+        /* Question Screens */
+        .question-header {
+            margin-bottom: 30px;
+        }
+
+        .question-number {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            line-height: 1.3;
+        }
+
+        /* Option Cards */
+        .options-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .option-card {
+            padding: 16px 20px;
+            background: var(--white);
+            border: 2px solid var(--grey-light);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .option-card:hover {
+            border-color: var(--primary-light);
+            background: rgba(221, 114, 42, 0.03);
+        }
+
+        .option-card.selected {
+            border-color: var(--primary);
+            background: rgba(221, 114, 42, 0.05);
+        }
+
+        .option-radio {
+            width: 22px;
+            height: 22px;
+            border: 2px solid var(--grey-medium);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+
+        .option-card.selected .option-radio {
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+
+        .option-radio::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--white);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .option-card.selected .option-radio::after {
+            opacity: 1;
+        }
+
+        .option-text {
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+
+        /* Results Screen */
+        .results-container {
+            background: var(--white);
+            border-radius: 16px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .results-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            padding: 30px;
+            text-align: center;
+        }
+
+        .results-header h1 {
+            color: var(--white);
+            font-size: 1.75rem;
+            margin-bottom: 8px;
+        }
+
+        .results-meta {
+            font-size: 0.9375rem;
+            opacity: 0.9;
+        }
+
+        .results-body {
+            padding: 30px;
+        }
+
+        .results-section {
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--grey-light);
+        }
+
+        .results-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .results-section h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .results-section h2 svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .results-section p {
+            color: var(--text-medium);
+            line-height: 1.7;
+        }
+
+        .results-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .results-section li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 10px;
+            color: var(--text-medium);
+            line-height: 1.6;
+        }
+
+        .results-section li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 10px;
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .highlight-box {
+            background: rgba(221, 114, 42, 0.08);
+            border-left: 4px solid var(--primary);
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-top: 14px;
+        }
+
+        .highlight-box p {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .cta-section {
+            background: var(--background);
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .cta-section p {
+            margin-bottom: 20px;
+            color: var(--text-medium);
+        }
+
+        .results-footer {
+            background: var(--text-dark);
+            color: var(--white);
+            padding: 24px 30px;
+            text-align: center;
+        }
+
+        .results-footer .company-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .results-footer .tagline {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            margin-bottom: 12px;
+        }
+
+        .results-footer .contact-links {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .results-footer a {
+            color: var(--primary-light);
+            text-decoration: none;
+        }
+
+        .results-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Action Buttons Below Report */
+        .report-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 24px;
+            padding: 0 4px;
+        }
+
+        .report-actions .btn {
+            justify-content: center;
+        }
+
+        /* Admin Panel */
+        .admin-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--text-dark);
+            color: var(--white);
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.8125rem;
+            cursor: pointer;
+            z-index: 50;
+            border: none;
+            font-family: inherit;
+        }
+
+        .admin-toggle:hover {
+            background: var(--text-medium);
+        }
+
+        .admin-panel {
+            position: fixed;
+            bottom: 70px;
+            right: 20px;
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            padding: 20px;
+            width: 320px;
+            max-height: 70vh;
+            overflow-y: auto;
+            z-index: 50;
+            display: none;
+        }
+
+        .admin-panel.show {
+            display: block;
+        }
+
+        .admin-panel h3 {
+            font-size: 1rem;
+            margin-bottom: 16px;
+            color: var(--text-dark);
+        }
+
+        .admin-panel .response-item {
+            background: var(--background);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 0.8125rem;
+        }
+
+        .admin-panel .response-item strong {
+            color: var(--text-dark);
+        }
+
+        .admin-panel .btn {
+            width: 100%;
+            margin-top: 12px;
+            font-size: 0.875rem;
+            padding: 10px 16px;
+        }
+
+        .no-responses {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* PDF Specific Styles */
+        .pdf-mode .admin-toggle,
+        .pdf-mode .admin-panel,
+        .pdf-mode .report-actions {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .container {
+                padding: 16px;
+            }
+
+            h1 {
+                font-size: 1.625rem;
+            }
+
+            .question-text {
+                font-size: 1.25rem;
+            }
+
+            .btn-group {
+                flex-direction: column-reverse;
+            }
+
+            .btn-group .btn {
+                width: 100%;
+            }
+
+            .results-header,
+            .results-body,
+            .results-footer {
+                padding: 20px;
+            }
+
+            .admin-panel {
+                width: calc(100% - 40px);
+                left: 20px;
+                right: 20px;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text-dark);
+            color: var(--white);
+            padding: 14px 24px;
+            border-radius: 10px;
+            font-size: 0.9375rem;
+            z-index: 200;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div class="screen active" id="screen-welcome">
+            <div class="welcome-header">
+                <div class="logo">ELAINE GOLD CONSULTING</div>
+                <h1>AI Confidence &amp; Capability Check</h1>
+                <p class="subtitle">Get clarity on where you are with AI — and practical next steps</p>
+                <div class="time-estimate">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    Takes about 2 minutes
+                </div>
+            </div>
+
+            <form id="welcomeForm">
+                <div class="form-group">
+                    <label for="firstName">First Name <span class="required">*</span></label>
+                    <input type="text" id="firstName" name="firstName" required placeholder="Your first name">
+                    <div class="error-message" id="firstNameError">Please enter your first name</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address <span class="required">*</span></label>
+                    <input type="email" id="email" name="email" required placeholder="you@example.com">
+                    <div class="error-message" id="emailError">Please enter a valid email address</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="company">Company/Business Name <span class="optional">(optional)</span></label>
+                    <input type="text" id="company" name="company" placeholder="Your company or business">
+                </div>
+
+                <div class="form-group">
+                    <label for="role">Your Role <span class="required">*</span></label>
+                    <select id="role" name="role" required>
+                        <option value="">Select your role...</option>
+                        <option value="solo">Solo founder or freelancer</option>
+                        <option value="small-business">Small business owner (team of 2-10)</option>
+                        <option value="corporate-member">Corporate team member</option>
+                        <option value="corporate-leader">Corporate leader or manager</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <div class="error-message" id="roleError">Please select your role</div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">
+                    Start Assessment
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <!-- Question 1: Current Confidence -->
+        <div class="screen" id="screen-q1">
+            <div class="progress-text">Question 1 of 6</div>
+            <div class="question-header">
+                <div class="question-number">Question 1</div>
+                <h2 class="question-text">How confident are you using AI in your work right now?</h2>
+            </div>
+            <div class="options-list" data-question="q1">
+                <div class="option-card" data-value="not-confident">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Not confident at all</span>
+                </div>
+                <div class="option-card" data-value="getting-started">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Getting started</span>
+                </div>
+                <div class="option-card" data-value="fairly-confident">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Fairly confident</span>
+                </div>
+                <div class="option-card" data-value="very-confident">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Very confident</span>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToScreen('welcome')">Back</button>
+                <button class="btn btn-primary" onclick="nextQuestion('q1', 'q2')" id="btn-q1">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Question 2: Biggest Challenge -->
+        <div class="screen" id="screen-q2">
+            <div class="progress-text">Question 2 of 6</div>
+            <div class="question-header">
+                <div class="question-number">Question 2</div>
+                <h2 class="question-text">What's your biggest challenge with AI?</h2>
+            </div>
+            <div class="options-list" data-question="q2">
+                <div class="option-card" data-value="dont-know-start">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Don't know where to start</span>
+                </div>
+                <div class="option-card" data-value="inconsistent-outputs">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Getting consistent, useful outputs</span>
+                </div>
+                <div class="option-card" data-value="team-alignment">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Team alignment or policy</span>
+                </div>
+                <div class="option-card" data-value="strategic-integration">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Strategic integration</span>
+                </div>
+                <div class="option-card" data-value="not-relevant">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Not relevant to my work yet</span>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToScreen('q1')">Back</button>
+                <button class="btn btn-primary" onclick="nextQuestion('q2', 'q3')" id="btn-q2">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Question 3: Frequency -->
+        <div class="screen" id="screen-q3">
+            <div class="progress-text">Question 3 of 6</div>
+            <div class="question-header">
+                <div class="question-number">Question 3</div>
+                <h2 class="question-text">How often do you use AI tools?</h2>
+            </div>
+            <div class="options-list" data-question="q3">
+                <div class="option-card" data-value="daily">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Daily</span>
+                </div>
+                <div class="option-card" data-value="weekly">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Weekly</span>
+                </div>
+                <div class="option-card" data-value="occasionally">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Occasionally</span>
+                </div>
+                <div class="option-card" data-value="rarely">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Rarely or never</span>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToScreen('q2')">Back</button>
+                <button class="btn btn-primary" onclick="nextQuestion('q3', 'q4')" id="btn-q3">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Question 4: What Would Help Most -->
+        <div class="screen" id="screen-q4">
+            <div class="progress-text">Question 4 of 6</div>
+            <div class="question-header">
+                <div class="question-number">Question 4</div>
+                <h2 class="question-text">What would help you most right now?</h2>
+            </div>
+            <div class="options-list" data-question="q4">
+                <div class="option-card" data-value="basics">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Learning the basics</span>
+                </div>
+                <div class="option-card" data-value="prompting">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Better prompting techniques</span>
+                </div>
+                <div class="option-card" data-value="team-training">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Team training or guidelines</span>
+                </div>
+                <div class="option-card" data-value="strategic-planning">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Strategic planning for AI adoption</span>
+                </div>
+                <div class="option-card" data-value="not-sure">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Not sure yet</span>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToScreen('q3')">Back</button>
+                <button class="btn btn-primary" onclick="nextQuestion('q4', 'q5')" id="btn-q4">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Question 5: Guidelines in Place -->
+        <div class="screen" id="screen-q5">
+            <div class="progress-text">Question 5 of 6</div>
+            <div class="question-header">
+                <div class="question-number">Question 5</div>
+                <h2 class="question-text">Do you have AI guidelines or policies in place?</h2>
+            </div>
+            <div class="options-list" data-question="q5">
+                <div class="option-card" data-value="yes-clear">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Yes, clear guidelines</span>
+                </div>
+                <div class="option-card" data-value="working-on-it">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Working on it</span>
+                </div>
+                <div class="option-card" data-value="no-not-yet">
+                    <div class="option-radio"></div>
+                    <span class="option-text">No, not yet</span>
+                </div>
+                <div class="option-card" data-value="not-applicable">
+                    <div class="option-radio"></div>
+                    <span class="option-text">Not applicable (I work solo)</span>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToScreen('q4')">Back</button>
+                <button class="btn btn-primary" onclick="nextQuestion('q5', 'q6')" id="btn-q5">
+                    Next
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Question 6: Specific Opportunity -->
+        <div class="screen" id="screen-q6">
+            <div class="progress-text">Question 6 of 6</div>
+            <div class="question-header">
+                <div class="question-number">Question 6</div>
+                <h2 class="question-text">What's one area where AI could save you time or improve quality?</h2>
+            </div>
+            <div class="form-group">
+                <textarea
+                    id="q6-text"
+                    placeholder="e.g., client communication, content creation, admin tasks, proposals..."
+                    maxlength="500"
+                    oninput="updateCharCount(this)"
+                ></textarea>
+                <div class="char-count"><span id="charCount">0</span>/500 characters</div>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-secondary" onclick="goToScreen('q5')">Back</button>
+                <button class="btn btn-primary" onclick="submitAssessment()" id="btn-q6">
+                    See My Results
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="screen" id="screen-results">
+            <div class="results-container" id="resultsContainer">
+                <div class="results-header">
+                    <h1>Your AI Confidence &amp; Capability Report</h1>
+                    <p class="results-meta"><span id="results-name"></span> | <span id="results-date"></span></p>
+                </div>
+                <div class="results-body">
+                    <!-- Section 1: Your Situation -->
+                    <div class="results-section">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 16v-4"></path>
+                                <path d="M12 8h.01"></path>
+                            </svg>
+                            Your Situation
+                        </h2>
+                        <p id="situation-text"></p>
+                    </div>
+
+                    <!-- Section 2: What I've Noticed -->
+                    <div class="results-section">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                            What I've Noticed
+                        </h2>
+                        <ul id="noticed-list"></ul>
+                    </div>
+
+                    <!-- Section 3: Your Next Step -->
+                    <div class="results-section">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                            </svg>
+                            Your Next Step
+                        </h2>
+                        <div class="highlight-box">
+                            <p id="next-step-text"></p>
+                        </div>
+                    </div>
+
+                    <!-- Section 4: One Thing to Try This Week -->
+                    <div class="results-section">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            One Thing to Try This Week
+                        </h2>
+                        <p id="try-this-week"></p>
+                    </div>
+
+                    <!-- Section 5: Working with Elaine -->
+                    <div class="results-section">
+                        <h2>
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                            Working with Elaine
+                        </h2>
+                        <p>I work with individuals, small businesses, and corporate teams to build AI confidence and capability — in a way that strengthens communication, not replaces it.</p>
+                        <p style="margin-top: 14px;">If you'd like to explore what would work for you:</p>
+                        <div class="cta-section">
+                            <a href="YOUR_BOOKING_LINK_HERE" target="_blank" class="btn btn-teal" id="bookingLink">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                Book a 15-Minute Call
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="results-footer">
+                    <div class="company-name">Elaine Gold Consulting</div>
+                    <div class="tagline">AI + Human Connection for founders, small businesses and teams</div>
+                    <div class="contact-links">
+                        <a href="https://www.elainegold.co.uk" target="_blank">www.elainegold.co.uk</a> |
+                        <a href="mailto:elaine@elainegold.co.uk">elaine@elainegold.co.uk</a><br>
+                        <a href="https://linkedin.com/in/elainegold" target="_blank">linkedin.com/in/elainegold</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="report-actions">
+                <button class="btn btn-primary" onclick="downloadPDF()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download Report as PDF
+                </button>
+                <button class="btn btn-outline" onclick="startOver()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                    Start Again
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <button class="admin-toggle" onclick="toggleAdminPanel()">View Responses</button>
+    <div class="admin-panel" id="adminPanel">
+        <h3>Saved Responses</h3>
+        <div id="responsesList"></div>
+        <button class="btn btn-primary" onclick="exportCSV()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export All as CSV
+        </button>
+        <button class="btn btn-secondary" onclick="clearAllResponses()">Clear All Data</button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION - Edit these values as needed
+        // ============================================
+        const CONFIG = {
+            bookingLink: 'YOUR_BOOKING_LINK_HERE', // Replace with your Calendly or booking link
+        };
+
+        // ============================================
+        // State Management
+        // ============================================
+        let responses = {
+            firstName: '',
+            email: '',
+            company: '',
+            role: '',
+            q1: '',
+            q2: '',
+            q3: '',
+            q4: '',
+            q5: '',
+            q6: ''
+        };
+
+        const progressSteps = {
+            'welcome': 0,
+            'q1': 16.67,
+            'q2': 33.33,
+            'q3': 50,
+            'q4': 66.67,
+            'q5': 83.33,
+            'q6': 100,
+            'results': 100
+        };
+
+        // ============================================
+        // Screen Navigation
+        // ============================================
+        function goToScreen(screenId) {
+            const currentScreen = document.querySelector('.screen.active');
+            const nextScreen = document.getElementById(`screen-${screenId}`);
+
+            if (currentScreen) {
+                currentScreen.classList.remove('active');
+            }
+
+            setTimeout(() => {
+                nextScreen.classList.add('active');
+                updateProgress(screenId);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }, 50);
+        }
+
+        function updateProgress(screenId) {
+            const progress = progressSteps[screenId] || 0;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        // ============================================
+        // Welcome Form Handling
+        // ============================================
+        document.getElementById('welcomeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const firstName = document.getElementById('firstName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const role = document.getElementById('role').value;
+
+            let isValid = true;
+
+            // Validate first name
+            if (!firstName) {
+                document.getElementById('firstName').classList.add('error');
+                document.getElementById('firstNameError').classList.add('show');
+                isValid = false;
+            } else {
+                document.getElementById('firstName').classList.remove('error');
+                document.getElementById('firstNameError').classList.remove('show');
+            }
+
+            // Validate email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                document.getElementById('email').classList.add('error');
+                document.getElementById('emailError').classList.add('show');
+                isValid = false;
+            } else {
+                document.getElementById('email').classList.remove('error');
+                document.getElementById('emailError').classList.remove('show');
+            }
+
+            // Validate role
+            if (!role) {
+                document.getElementById('role').classList.add('error');
+                document.getElementById('roleError').classList.add('show');
+                isValid = false;
+            } else {
+                document.getElementById('role').classList.remove('error');
+                document.getElementById('roleError').classList.remove('show');
+            }
+
+            if (isValid) {
+                responses.firstName = firstName;
+                responses.email = email;
+                responses.company = document.getElementById('company').value.trim();
+                responses.role = role;
+                goToScreen('q1');
+            }
+        });
+
+        // ============================================
+        // Option Card Selection
+        // ============================================
+        document.querySelectorAll('.options-list').forEach(list => {
+            const question = list.dataset.question;
+            list.querySelectorAll('.option-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    // Remove selected from siblings
+                    list.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+                    // Add selected to clicked
+                    this.classList.add('selected');
+                    // Store response
+                    responses[question] = this.dataset.value;
+                });
+            });
+        });
+
+        // ============================================
+        // Question Navigation
+        // ============================================
+        function nextQuestion(currentQ, nextQ) {
+            if (!responses[currentQ]) {
+                showToast('Please select an option to continue');
+                return;
+            }
+            goToScreen(nextQ);
+        }
+
+        // ============================================
+        // Character Counter
+        // ============================================
+        function updateCharCount(textarea) {
+            const count = textarea.value.length;
+            const countEl = document.getElementById('charCount');
+            countEl.textContent = count;
+
+            if (count > 450) {
+                countEl.parentElement.classList.add('warning');
+            } else {
+                countEl.parentElement.classList.remove('warning');
+            }
+        }
+
+        // ============================================
+        // Submit Assessment
+        // ============================================
+        function submitAssessment() {
+            responses.q6 = document.getElementById('q6-text').value.trim();
+
+            // Save to localStorage
+            saveResponse(responses);
+
+            // Generate and show results
+            generateResults();
+            goToScreen('results');
+        }
+
+        // ============================================
+        // Generate Personalised Results
+        // ============================================
+        function generateResults() {
+            // Set name and date
+            document.getElementById('results-name').textContent = responses.firstName;
+            document.getElementById('results-date').textContent = new Date().toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+            });
+
+            // Section 1: Your Situation (based on Q2)
+            const situationTexts = {
+                'dont-know-start': "You're interested in AI but haven't found the right entry point yet. The main barrier is knowing where to begin.",
+                'inconsistent-outputs': "You're using AI occasionally but outputs are inconsistent. You need more structure around prompting and use cases.",
+                'team-alignment': "Your team is using AI, but there's no shared approach or clear guidelines yet. You need alignment and structure.",
+                'strategic-integration': "You're ready to think strategically about AI adoption and want to integrate it effectively across your business or team.",
+                'not-relevant': "You're not convinced AI is relevant to your work yet, or you haven't seen clear use cases that apply to what you do."
+            };
+            document.getElementById('situation-text').textContent = situationTexts[responses.q2] || situationTexts['dont-know-start'];
+
+            // Section 2: What I've Noticed (dynamic bullet points)
+            const noticedList = document.getElementById('noticed-list');
+            noticedList.innerHTML = '';
+            const notices = generateNotices();
+            notices.forEach(notice => {
+                const li = document.createElement('li');
+                li.textContent = notice;
+                noticedList.appendChild(li);
+            });
+
+            // Section 3: Your Next Step (based on Q2)
+            const nextStepTexts = {
+                'dont-know-start': "Start with one simple, repeatable task — like drafting emails or summarising meeting notes. Build confidence there before expanding. Pick something you do several times a week and test AI on that one thing.",
+                'inconsistent-outputs': "Focus on prompt structure. Give AI clear context about who you're writing for, what you want them to do, and what tone you want. Include an example of your own writing style. That's where consistency comes from.",
+                'team-alignment': "Start with a simple one-page document: which tools you're using, what's safe to share, and basic quality standards. Get your team in a room (or on a call) and agree on the essentials. You can refine it later.",
+                'strategic-integration': "Map where AI is already being used across your business or team. Look for gaps, overlaps, and areas where you could get better results. Then align AI use with your actual goals — not just where it saves time.",
+                'not-relevant': "Fair enough. AI isn't relevant to every task or every business. But if you're open to it, try one low-stakes experiment — like summarising a report or drafting a follow-up email. You might be surprised."
+            };
+            document.getElementById('next-step-text').textContent = nextStepTexts[responses.q2] || nextStepTexts['dont-know-start'];
+
+            // Section 4: One Thing to Try This Week (based on Role)
+            const tryThisWeekTexts = {
+                'solo': "Take one task you do regularly this week. Before asking AI to help, write down 3 bullet points: who it's for, what you want to achieve, and the tone you want. Then see how AI performs with that context.",
+                'small-business': "Ask your team: who's using AI, for what, and what's working? Use that conversation to shape your approach and spot quick wins.",
+                'corporate-member': "Run a quick team check-in. Ask who's using AI, what they're using it for, and where they're getting stuck. Use that to identify training needs or policy gaps.",
+                'corporate-leader': "Run a quick team check-in. Ask who's using AI, what they're using it for, and where they're getting stuck. Use that to identify training needs or policy gaps.",
+                'other': "Take one task you do regularly this week. Before asking AI to help, write down 3 bullet points: who it's for, what you want to achieve, and the tone you want. Then see how AI performs with that context."
+            };
+            document.getElementById('try-this-week').textContent = tryThisWeekTexts[responses.role] || tryThisWeekTexts['solo'];
+
+            // Update booking link
+            document.getElementById('bookingLink').href = CONFIG.bookingLink;
+        }
+
+        function generateNotices() {
+            const notices = [];
+
+            // Based on Q1 (Confidence) and Q3 (Frequency)
+            if (responses.q1 === 'not-confident' && responses.q3 === 'rarely') {
+                notices.push("You haven't started using AI regularly yet — which is fine. You're at the beginning.");
+            } else if (responses.q1 === 'not-confident') {
+                notices.push("Your confidence with AI is low, even though you've had some exposure to it.");
+            } else if (responses.q1 === 'getting-started') {
+                notices.push("You're in the early stages of building your AI skills.");
+            } else if (responses.q1 === 'fairly-confident') {
+                notices.push("You have a reasonable level of confidence with AI tools.");
+            } else if (responses.q1 === 'very-confident') {
+                notices.push("You're already confident using AI — now it's about optimising how you use it.");
+            }
+
+            // Based on Q3 (Frequency)
+            if (responses.q3 === 'daily') {
+                notices.push("You're using AI daily, which means you have regular practice to build on.");
+            } else if (responses.q3 === 'weekly') {
+                notices.push("You're using AI weekly — there's room to increase that if it would help.");
+            } else if (responses.q3 === 'occasionally' || responses.q3 === 'rarely') {
+                notices.push("You're not using AI very often yet, which may be limiting what you're getting from it.");
+            }
+
+            // Based on Q5 (Guidelines)
+            if (responses.q5 === 'no-not-yet') {
+                notices.push("You don't have guidelines in place for safe AI use.");
+            } else if (responses.q5 === 'working-on-it') {
+                notices.push("You're in the process of developing AI guidelines — that's a good sign.");
+            } else if (responses.q5 === 'yes-clear') {
+                notices.push("You already have clear AI guidelines, which puts you ahead of many.");
+            }
+
+            // Based on Q4 (What would help)
+            if (responses.q4 === 'basics') {
+                notices.push("You've identified that learning the fundamentals is your priority right now.");
+            } else if (responses.q4 === 'prompting') {
+                notices.push("Better prompting techniques could make a real difference to your results.");
+            } else if (responses.q4 === 'team-training') {
+                notices.push("Team training or guidelines would help align how your team uses AI.");
+            } else if (responses.q4 === 'strategic-planning') {
+                notices.push("You're thinking strategically about AI adoption — that's a mature approach.");
+            }
+
+            // Based on Role for corporate implications
+            if ((responses.role === 'corporate-member' || responses.role === 'corporate-leader') && responses.q5 !== 'yes-clear') {
+                notices.push("As part of a corporate team, having shared guidelines would benefit everyone.");
+            }
+
+            // Based on Q6 (Specific opportunity) - mention the task if provided
+            if (responses.q6 && responses.q6.length > 10) {
+                notices.push(`You've identified "${responses.q6.substring(0, 50)}${responses.q6.length > 50 ? '...' : ''}" as an area where AI could help — that's a good starting point.`);
+            }
+
+            // Return 3-4 notices maximum
+            return notices.slice(0, 4);
+        }
+
+        // ============================================
+        // PDF Download
+        // ============================================
+        function downloadPDF() {
+            const element = document.getElementById('resultsContainer');
+            document.body.classList.add('pdf-mode');
+
+            const opt = {
+                margin: 0,
+                filename: `AI-Capability-Report-${responses.firstName}-${new Date().toISOString().split('T')[0]}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                document.body.classList.remove('pdf-mode');
+                showToast('Report downloaded successfully');
+            });
+        }
+
+        // ============================================
+        // Local Storage
+        // ============================================
+        function saveResponse(data) {
+            const savedResponses = JSON.parse(localStorage.getItem('aiDiagnosticResponses') || '[]');
+            const responseWithTimestamp = {
+                ...data,
+                timestamp: new Date().toISOString()
+            };
+            savedResponses.push(responseWithTimestamp);
+            localStorage.setItem('aiDiagnosticResponses', JSON.stringify(savedResponses));
+            updateAdminPanel();
+        }
+
+        function loadResponses() {
+            return JSON.parse(localStorage.getItem('aiDiagnosticResponses') || '[]');
+        }
+
+        function clearAllResponses() {
+            if (confirm('Are you sure you want to clear all saved responses? This cannot be undone.')) {
+                localStorage.removeItem('aiDiagnosticResponses');
+                updateAdminPanel();
+                showToast('All responses cleared');
+            }
+        }
+
+        // ============================================
+        // Admin Panel
+        // ============================================
+        function toggleAdminPanel() {
+            const panel = document.getElementById('adminPanel');
+            panel.classList.toggle('show');
+            if (panel.classList.contains('show')) {
+                updateAdminPanel();
+            }
+        }
+
+        function updateAdminPanel() {
+            const savedResponses = loadResponses();
+            const listEl = document.getElementById('responsesList');
+
+            if (savedResponses.length === 0) {
+                listEl.innerHTML = '<p class="no-responses">No responses saved yet</p>';
+                return;
+            }
+
+            listEl.innerHTML = savedResponses.map((r, i) => `
+                <div class="response-item">
+                    <strong>${r.firstName}</strong> (${r.email})<br>
+                    <small>${new Date(r.timestamp).toLocaleString('en-GB')}</small>
+                </div>
+            `).reverse().join('');
+        }
+
+        // ============================================
+        // CSV Export
+        // ============================================
+        function exportCSV() {
+            const savedResponses = loadResponses();
+
+            if (savedResponses.length === 0) {
+                showToast('No responses to export');
+                return;
+            }
+
+            const headers = [
+                'Timestamp',
+                'First Name',
+                'Email',
+                'Company',
+                'Role',
+                'Q1 - Confidence',
+                'Q2 - Biggest Challenge',
+                'Q3 - Frequency',
+                'Q4 - What Would Help',
+                'Q5 - Guidelines',
+                'Q6 - Opportunity Area'
+            ];
+
+            const roleLabels = {
+                'solo': 'Solo founder or freelancer',
+                'small-business': 'Small business owner (team of 2-10)',
+                'corporate-member': 'Corporate team member',
+                'corporate-leader': 'Corporate leader or manager',
+                'other': 'Other'
+            };
+
+            const q1Labels = {
+                'not-confident': 'Not confident at all',
+                'getting-started': 'Getting started',
+                'fairly-confident': 'Fairly confident',
+                'very-confident': 'Very confident'
+            };
+
+            const q2Labels = {
+                'dont-know-start': "Don't know where to start",
+                'inconsistent-outputs': 'Getting consistent, useful outputs',
+                'team-alignment': 'Team alignment or policy',
+                'strategic-integration': 'Strategic integration',
+                'not-relevant': 'Not relevant to my work yet'
+            };
+
+            const q3Labels = {
+                'daily': 'Daily',
+                'weekly': 'Weekly',
+                'occasionally': 'Occasionally',
+                'rarely': 'Rarely or never'
+            };
+
+            const q4Labels = {
+                'basics': 'Learning the basics',
+                'prompting': 'Better prompting techniques',
+                'team-training': 'Team training or guidelines',
+                'strategic-planning': 'Strategic planning for AI adoption',
+                'not-sure': 'Not sure yet'
+            };
+
+            const q5Labels = {
+                'yes-clear': 'Yes, clear guidelines',
+                'working-on-it': 'Working on it',
+                'no-not-yet': 'No, not yet',
+                'not-applicable': 'Not applicable (I work solo)'
+            };
+
+            const rows = savedResponses.map(r => [
+                r.timestamp,
+                r.firstName,
+                r.email,
+                r.company || '',
+                roleLabels[r.role] || r.role,
+                q1Labels[r.q1] || r.q1,
+                q2Labels[r.q2] || r.q2,
+                q3Labels[r.q3] || r.q3,
+                q4Labels[r.q4] || r.q4,
+                q5Labels[r.q5] || r.q5,
+                r.q6 || ''
+            ]);
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `ai-diagnostic-responses-${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+
+            showToast('CSV exported successfully');
+        }
+
+        // ============================================
+        // Start Over
+        // ============================================
+        function startOver() {
+            // Reset responses
+            responses = {
+                firstName: '',
+                email: '',
+                company: '',
+                role: '',
+                q1: '',
+                q2: '',
+                q3: '',
+                q4: '',
+                q5: '',
+                q6: ''
+            };
+
+            // Reset form fields
+            document.getElementById('welcomeForm').reset();
+            document.getElementById('q6-text').value = '';
+            document.getElementById('charCount').textContent = '0';
+
+            // Deselect all options
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            // Remove error states
+            document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+            document.querySelectorAll('.error-message').forEach(el => el.classList.remove('show'));
+
+            // Go back to welcome
+            goToScreen('welcome');
+        }
+
+        // ============================================
+        // Toast Notifications
+        // ============================================
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ============================================
+        // Initialisation
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            updateAdminPanel();
+
+            // Set booking link from config
+            if (CONFIG.bookingLink && CONFIG.bookingLink !== 'YOUR_BOOKING_LINK_HERE') {
+                document.getElementById('bookingLink').href = CONFIG.bookingLink;
+            }
+        });
+    </script>
+</body>
+</html>
