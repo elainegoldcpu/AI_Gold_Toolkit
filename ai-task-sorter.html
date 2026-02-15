@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Task Sorter | Map your tasks to the right AI approach</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:wght@400&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #dd722a;
+            --black: #0e0906;
+            --background: #fefaec;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --shadow: rgba(14, 9, 6, 0.1);
+
+            --delegate: #2d6a4f;
+            --delegate-light: #d8f3dc;
+            --refine: #1d4e89;
+            --refine-light: #d0e8ff;
+            --verify: #b8860b;
+            --verify-light: #fff3cd;
+            --own: #9b2c2c;
+            --own-light: #fee2e2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: var(--background);
+            color: var(--black);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-family: 'DM Serif Text', serif;
+            font-size: 2rem;
+            color: var(--black);
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-family: 'DM Serif Text', serif;
+            font-size: 1.4rem;
+            color: var(--black);
+            margin-bottom: 16px;
+        }
+
+        h3 {
+            font-family: 'DM Serif Text', serif;
+            font-size: 1.1rem;
+            margin-bottom: 12px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+        }
+
+        .intro {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 40px;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        /* Input Section */
+        .input-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 4px 20px var(--shadow);
+            margin-bottom: 32px;
+        }
+
+        .task-input-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .task-input {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 1rem;
+            border: 2px solid #e0d8c8;
+            border-radius: 8px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .task-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .btn {
+            padding: 14px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #c5631f;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--light-gray);
+            color: var(--black);
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        /* Questions Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(14, 9, 6, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .current-task-badge {
+            background: #fff8f4;
+            border: 1px solid #f0e0d0;
+            padding: 10px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .current-task-badge span {
+            color: var(--primary);
+        }
+
+        .question-group {
+            margin-bottom: 28px;
+        }
+
+        .question-label {
+            font-weight: 600;
+            margin-bottom: 14px;
+            display: block;
+            font-size: 1.05rem;
+        }
+
+        .question-hint {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 12px;
+            font-style: italic;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            display: flex;
+            align-items: flex-start;
+            padding: 14px 16px;
+            background: var(--light-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            background: #e8e8e8;
+        }
+
+        .option.selected {
+            border-color: var(--primary);
+            background: #fff8f4;
+        }
+
+        .option input {
+            display: none;
+        }
+
+        .option-marker {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            margin-right: 12px;
+            margin-top: 2px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .option.selected .option-marker {
+            border-color: var(--primary);
+            background: var(--primary);
+        }
+
+        .option.selected .option-marker::after {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .option-text strong {
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        .option-text span {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        /* Matrix Section */
+        .matrix-section {
+            margin: 40px 0;
+        }
+
+        .matrix-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .matrix-container {
+            position: relative;
+            background: var(--white);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .matrix-labels {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .y-label {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            position: absolute;
+            left: -10px;
+            top: 50%;
+            transform: rotate(180deg) translateY(50%);
+            font-weight: 600;
+            color: #666;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .x-label {
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .matrix-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 12px;
+            margin-left: 30px;
+            min-height: 400px;
+        }
+
+        .quadrant {
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 180px;
+            position: relative;
+        }
+
+        .quadrant-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .quadrant-icon {
+            font-size: 1.2rem;
+        }
+
+        .quadrant-title {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .quadrant-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-bottom: 12px;
+        }
+
+        .quadrant.delegate {
+            background: linear-gradient(135deg, var(--delegate) 0%, #3d8b6a 100%);
+            color: white;
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .quadrant.refine {
+            background: linear-gradient(135deg, var(--refine) 0%, #2d6eb9 100%);
+            color: white;
+            grid-column: 1;
+            grid-row: 1;
+        }
+
+        .quadrant.verify {
+            background: linear-gradient(135deg, var(--verify) 0%, #d4a017 100%);
+            color: white;
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        .quadrant.own {
+            background: linear-gradient(135deg, var(--own) 0%, #c53c3c 100%);
+            color: white;
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .task-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .task-card {
+            background: rgba(255,255,255,0.95);
+            color: var(--black);
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .task-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+        }
+
+        .task-card.expanded {
+            background: white;
+        }
+
+        .task-card-name {
+            font-weight: 500;
+            flex: 1;
+        }
+
+        .task-card-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .task-card-btn {
+            background: none;
+            border: none;
+            padding: 4px 6px;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity 0.2s;
+            font-size: 1rem;
+        }
+
+        .task-card-btn:hover {
+            opacity: 1;
+        }
+
+        .empty-quadrant {
+            color: rgba(255,255,255,0.6);
+            font-style: italic;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        /* Task Detail Panel */
+        .task-detail-panel {
+            display: none;
+            background: var(--white);
+            border-radius: 12px;
+            padding: 28px;
+            margin: 24px 0;
+            box-shadow: 0 4px 20px var(--shadow);
+            animation: slideIn 0.3s ease;
+        }
+
+        .task-detail-panel.active {
+            display: block;
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-task-name {
+            font-family: 'DM Serif Text', serif;
+            font-size: 1.3rem;
+            margin-bottom: 4px;
+        }
+
+        .detail-quadrant-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .detail-quadrant-badge.delegate { background: var(--delegate); }
+        .detail-quadrant-badge.refine { background: var(--refine); }
+        .detail-quadrant-badge.verify { background: var(--verify); }
+        .detail-quadrant-badge.own { background: var(--own); }
+
+        .close-detail {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close-detail:hover {
+            color: #666;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .detail-section {
+            background: var(--light-gray);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .detail-section h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            margin-bottom: 10px;
+        }
+
+        .detail-section p {
+            margin-bottom: 8px;
+            color: #444;
+        }
+
+        .detail-section.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .prompt-box {
+            background: var(--white);
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #333;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #c5631f;
+        }
+
+        .time-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--delegate-light);
+            color: var(--delegate);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Insights Section */
+        .insights-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 28px;
+            margin: 32px 0;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .insight-card {
+            text-align: center;
+            padding: 20px 16px;
+            border-radius: 10px;
+        }
+
+        .insight-card.delegate { background: var(--delegate-light); }
+        .insight-card.refine { background: var(--refine-light); }
+        .insight-card.verify { background: var(--verify-light); }
+        .insight-card.own { background: var(--own-light); }
+
+        .insight-number {
+            font-family: 'DM Serif Text', serif;
+            font-size: 2.5rem;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .insight-card.delegate .insight-number { color: var(--delegate); }
+        .insight-card.refine .insight-number { color: var(--refine); }
+        .insight-card.verify .insight-number { color: var(--verify); }
+        .insight-card.own .insight-number { color: var(--own); }
+
+        .insight-label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .insight-summary {
+            grid-column: 1 / -1;
+            background: #fff8f4;
+            border: 1px solid #f0e0d0;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 8px;
+        }
+
+        .insight-summary p {
+            font-size: 1.1rem;
+            color: #444;
+        }
+
+        /* Tips Section */
+        .tips-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 28px;
+            margin: 32px 0;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .tips-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .tips-toggle h2 {
+            margin-bottom: 0;
+        }
+
+        .tips-toggle-icon {
+            font-size: 1.5rem;
+            transition: transform 0.3s;
+        }
+
+        .tips-section.expanded .tips-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .tips-content {
+            display: none;
+            margin-top: 24px;
+        }
+
+        .tips-section.expanded .tips-content {
+            display: block;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .tip-card {
+            background: var(--light-gray);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .tip-card h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .tip-card ul {
+            padding-left: 18px;
+            color: #555;
+        }
+
+        .tip-card li {
+            margin-bottom: 6px;
+        }
+
+        .layer-loop-box {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #fff8f4 0%, #fff 100%);
+            border: 2px solid var(--primary);
+            padding: 24px;
+            border-radius: 12px;
+        }
+
+        .layer-loop-box h4 {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 16px;
+        }
+
+        .layer-loop-steps {
+            display: flex;
+            gap: 20px;
+        }
+
+        .layer-loop-step {
+            flex: 1;
+            text-align: center;
+        }
+
+        .step-number {
+            width: 36px;
+            height: 36px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin: 0 auto 10px;
+        }
+
+        .step-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .step-desc {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Export Section */
+        .export-section {
+            text-align: center;
+            margin: 32px 0;
+            padding-top: 24px;
+            border-top: 1px solid #e0d8c8;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid #e0d8c8;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .footer a {
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .task-input-row {
+                flex-direction: column;
+            }
+
+            .matrix-grid {
+                grid-template-columns: 1fr;
+                margin-left: 0;
+            }
+
+            .quadrant {
+                grid-column: 1 !important;
+            }
+
+            .quadrant.delegate { grid-row: 4; }
+            .quadrant.refine { grid-row: 2; }
+            .quadrant.verify { grid-row: 3; }
+            .quadrant.own { grid-row: 1; }
+
+            .y-label, .x-label {
+                display: none;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .insights-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .layer-loop-steps {
+                flex-direction: column;
+            }
+
+            .modal {
+                padding: 24px 20px;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            body { background: white; }
+            .input-section, .export-section, .modal-overlay, .task-card-actions, .tips-section { display: none; }
+            .container { padding: 0; max-width: 100%; }
+            .matrix-container, .insights-section { box-shadow: none; border: 1px solid #ddd; }
+            .task-detail-panel { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AI Task Sorter</h1>
+        <p class="subtitle">Map your tasks to the right AI approach</p>
+        <p class="intro"><strong>This short exercise is designed to help founders and directors think clearly about which tasks to delegate to AI — and where human judgement should stay firmly in place.</strong></p>
+        <p class="intro">Enter the tasks that regularly take your time. Answer two quick questions about each, and see where they land on the matrix. Each placement comes with a recommended workflow and starter prompt.</p>
+
+        <!-- Input Section -->
+        <div class="input-section">
+            <h2>Add a task</h2>
+            <div class="task-input-row">
+                <input type="text" id="taskInput" class="task-input" placeholder="e.g. Writing meeting summaries, Drafting client proposals, Pricing decisions..." autofocus>
+                <button class="btn btn-primary" onclick="openQuestions()">Sort this task</button>
+            </div>
+        </div>
+
+        <!-- Questions Modal -->
+        <div class="modal-overlay" id="modalOverlay">
+            <div class="modal">
+                <div class="current-task-badge">Sorting: <span id="currentTaskName"></span></div>
+
+                <div class="question-group">
+                    <label class="question-label">1. What's at stake if this goes wrong?</label>
+                    <p class="question-hint">Think about the worst realistic outcome of an error</p>
+                    <div class="options" id="q1Options">
+                        <label class="option" onclick="selectOption(this, 'risk', 1)">
+                            <input type="radio" name="risk" value="1">
+                            <span class="option-marker"></span>
+                            <span class="option-text">
+                                <strong>Low stakes</strong>
+                                <span>Easy to fix, internal only, no real consequences</span>
+                            </span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'risk', 2)">
+                            <input type="radio" name="risk" value="2">
+                            <span class="option-marker"></span>
+                            <span class="option-text">
+                                <strong>Moderate stakes</strong>
+                                <span>Could affect credibility, require rework, or cause minor client issues</span>
+                            </span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'risk', 3)">
+                            <input type="radio" name="risk" value="3">
+                            <span class="option-marker"></span>
+                            <span class="option-text">
+                                <strong>High stakes</strong>
+                                <span>Financial, legal, reputational damage, or could be quoted publicly</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="question-group">
+                    <label class="question-label">2. How much does this need your personal judgement?</label>
+                    <p class="question-hint">Consider expertise, relationships, tone, strategic thinking</p>
+                    <div class="options" id="q2Options">
+                        <label class="option" onclick="selectOption(this, 'judgement', 1)">
+                            <input type="radio" name="judgement" value="1">
+                            <span class="option-marker"></span>
+                            <span class="option-text">
+                                <strong>Routine</strong>
+                                <span>Follows a pattern, could describe "good" in a few bullet points</span>
+                            </span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'judgement', 2)">
+                            <input type="radio" name="judgement" value="2">
+                            <span class="option-marker"></span>
+                            <span class="option-text">
+                                <strong>Needs your voice</strong>
+                                <span>Should sound like you, reflect your thinking, or match your style</span>
+                            </span>
+                        </label>
+                        <label class="option" onclick="selectOption(this, 'judgement', 3)">
+                            <input type="radio" name="judgement" value="3">
+                            <span class="option-marker"></span>
+                            <span class="option-text">
+                                <strong>Requires your expertise</strong>
+                                <span>Involves trust, relationships, strategy, or decisions only you should make</span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-buttons">
+                    <button class="btn btn-primary" onclick="categorizeTask()">Place on matrix</button>
+                    <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Matrix Section -->
+        <div class="matrix-section">
+            <div class="matrix-header">
+                <h2>Your Task Matrix</h2>
+            </div>
+            <div class="matrix-container">
+                <span class="y-label">JUDGEMENT REQUIRED →</span>
+                <div class="matrix-grid">
+                    <div class="quadrant refine" id="quadrant-refine">
+                        <div class="quadrant-header">
+                            <span class="quadrant-icon">✍️</span>
+                            <span class="quadrant-title">REFINE</span>
+                        </div>
+                        <p class="quadrant-subtitle">AI drafts, you add voice & polish</p>
+                        <div class="task-cards" id="tasks-refine"></div>
+                    </div>
+                    <div class="quadrant own" id="quadrant-own">
+                        <div class="quadrant-header">
+                            <span class="quadrant-icon">🎯</span>
+                            <span class="quadrant-title">OWN</span>
+                        </div>
+                        <p class="quadrant-subtitle">You lead, AI supports your thinking</p>
+                        <div class="task-cards" id="tasks-own"></div>
+                    </div>
+                    <div class="quadrant delegate" id="quadrant-delegate">
+                        <div class="quadrant-header">
+                            <span class="quadrant-icon">⚡</span>
+                            <span class="quadrant-title">DELEGATE</span>
+                        </div>
+                        <p class="quadrant-subtitle">Let AI handle it, review briefly</p>
+                        <div class="task-cards" id="tasks-delegate"></div>
+                    </div>
+                    <div class="quadrant verify" id="quadrant-verify">
+                        <div class="quadrant-header">
+                            <span class="quadrant-icon">🔍</span>
+                            <span class="quadrant-title">VERIFY</span>
+                        </div>
+                        <p class="quadrant-subtitle">AI drafts, you check facts carefully</p>
+                        <div class="task-cards" id="tasks-verify"></div>
+                    </div>
+                </div>
+                <p class="x-label">RISK / STAKES →</p>
+            </div>
+        </div>
+
+        <!-- Task Detail Panel -->
+        <div class="task-detail-panel" id="taskDetailPanel">
+            <div class="detail-header">
+                <div>
+                    <h3 class="detail-task-name" id="detailTaskName"></h3>
+                    <span class="detail-quadrant-badge" id="detailQuadrantBadge"></span>
+                </div>
+                <button class="close-detail" onclick="closeDetailPanel()">&times;</button>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-section">
+                    <h4>Why it landed here</h4>
+                    <p id="detailWhy"></p>
+                </div>
+                <div class="detail-section">
+                    <h4>Time-saving potential</h4>
+                    <p><span class="time-badge" id="detailTimeBadge"></span></p>
+                    <p id="detailTimeExplain" style="margin-top: 8px; font-size: 0.9rem;"></p>
+                </div>
+                <div class="detail-section">
+                    <h4>Recommended workflow</h4>
+                    <p id="detailWorkflow"></p>
+                </div>
+                <div class="detail-section">
+                    <h4>Watch out for</h4>
+                    <p id="detailWatchOut"></p>
+                </div>
+                <div class="detail-section full-width">
+                    <h4>Starter prompt</h4>
+                    <div class="prompt-box">
+                        <button class="copy-btn" onclick="copyPrompt()">Copy</button>
+                        <span id="detailPrompt"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Insights Section -->
+        <div class="insights-section" id="insightsSection" style="display: none;">
+            <h2>Your Insights</h2>
+            <div class="insights-grid">
+                <div class="insight-card delegate">
+                    <div class="insight-number" id="countDelegate">0</div>
+                    <div class="insight-label">Delegate</div>
+                </div>
+                <div class="insight-card refine">
+                    <div class="insight-number" id="countRefine">0</div>
+                    <div class="insight-label">Refine</div>
+                </div>
+                <div class="insight-card verify">
+                    <div class="insight-number" id="countVerify">0</div>
+                    <div class="insight-label">Verify</div>
+                </div>
+                <div class="insight-card own">
+                    <div class="insight-number" id="countOwn">0</div>
+                    <div class="insight-label">Own</div>
+                </div>
+                <div class="insight-summary" id="insightSummary">
+                    <p></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="tips-section" id="tipsSection">
+            <div class="tips-toggle" onclick="toggleTips()">
+                <h2>Tips for Working with AI</h2>
+                <span class="tips-toggle-icon">▼</span>
+            </div>
+            <div class="tips-content">
+                <div class="tips-grid">
+                    <div class="layer-loop-box">
+                        <h4>The Layer and Loop Method (for Refine & Verify tasks)</h4>
+                        <div class="layer-loop-steps">
+                            <div class="layer-loop-step">
+                                <div class="step-number">1</div>
+                                <div class="step-title">Layer</div>
+                                <div class="step-desc">Add your judgement over the AI draft. Check facts, adjust tone, remove anything you wouldn't say.</div>
+                            </div>
+                            <div class="layer-loop-step">
+                                <div class="step-number">2</div>
+                                <div class="step-title">Loop</div>
+                                <div class="step-desc">Run through once more to tighten accuracy and consistency.</div>
+                            </div>
+                            <div class="layer-loop-step">
+                                <div class="step-number">3</div>
+                                <div class="step-title">Stop</div>
+                                <div class="step-desc">Then stop. Not endlessly refining. Just enough to keep quality where it needs to be.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tip-card">
+                        <h4>Briefing AI effectively</h4>
+                        <ul>
+                            <li>Give context: who's it for, what's the purpose</li>
+                            <li>Specify format: length, structure, tone</li>
+                            <li>Share examples of what "good" looks like</li>
+                            <li>State constraints: what to avoid, what must be included</li>
+                        </ul>
+                    </div>
+                    <div class="tip-card">
+                        <h4>Common mistakes to avoid</h4>
+                        <ul>
+                            <li>Using AI output without reading it properly</li>
+                            <li>Assuming AI knows your context or preferences</li>
+                            <li>Endlessly refining instead of shipping</li>
+                            <li>Using AI for tasks where trust is the product</li>
+                        </ul>
+                    </div>
+                    <div class="tip-card">
+                        <h4>When to override this tool</h4>
+                        <ul>
+                            <li>Your gut says a task needs more care than suggested</li>
+                            <li>The specific recipient changes the stakes</li>
+                            <li>You're in a crisis or sensitive period</li>
+                            <li>Legal or regulatory requirements apply</li>
+                        </ul>
+                    </div>
+                    <div class="tip-card">
+                        <h4>Building AI into your workflow</h4>
+                        <ul>
+                            <li>Start with Delegate tasks to build confidence</li>
+                            <li>Create templates for recurring tasks</li>
+                            <li>Save prompts that work well for reuse</li>
+                            <li>Review and adjust your matrix quarterly</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Section -->
+        <div class="export-section" id="exportSection" style="display: none;">
+            <p style="color: #666;">Save or share your task matrix</p>
+            <div class="export-buttons">
+                <button class="btn btn-secondary" onclick="exportAsText()">Download as text</button>
+                <button class="btn btn-secondary" onclick="window.print()">Print / Save as PDF</button>
+                <button class="btn btn-secondary" onclick="clearAllTasks()">Start over</button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p style="margin-bottom: 16px;">Part of the <a href="index.html">AI GOLD Toolkit</a> · <a href="ai-decision-guide.html">Read the full Decision Guide</a></p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 16px; border-top: 1px solid #e0d8c8;">
+                <svg width="32" height="32" viewBox="0 0 100 100" fill="#0e0906">
+                    <circle cx="50" cy="50" r="8"/>
+                    <rect x="42" y="10" width="16" height="28" rx="8"/>
+                    <rect x="42" y="62" width="16" height="28" rx="8"/>
+                    <rect x="10" y="42" width="28" height="16" rx="8"/>
+                    <rect x="62" y="42" width="28" height="16" rx="8"/>
+                    <rect x="17" y="22" width="8" height="20" rx="4" transform="rotate(-45 21 32)"/>
+                    <rect x="75" y="22" width="8" height="20" rx="4" transform="rotate(45 79 32)"/>
+                    <rect x="17" y="58" width="8" height="20" rx="4" transform="rotate(45 21 68)"/>
+                    <rect x="75" y="58" width="8" height="20" rx="4" transform="rotate(-45 79 68)"/>
+                </svg>
+                <span><strong>Elaine Gold</strong> · <a href="https://www.elaine-gold.com" target="_blank">www.elaine-gold.com</a></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State
+        let currentTask = '';
+        let answers = { risk: null, judgement: null };
+        let tasks = { delegate: [], refine: [], verify: [], own: [] };
+        let selectedTaskIndex = null;
+        let selectedQuadrant = null;
+
+        // Quadrant configurations
+        const quadrantConfig = {
+            delegate: {
+                name: 'Delegate',
+                description: 'Low risk, routine work',
+                icon: '⚡',
+                timeSaving: 'High',
+                timeExplain: 'These tasks can be almost fully automated. Expect to save 70-90% of time.',
+                workflow: '1. Brief AI clearly with context and format\n2. Review output in under 2 minutes\n3. Make minor tweaks if needed\n4. Use immediately',
+                watchOut: 'Don\'t skip the brief review — AI can make obvious errors that are easy to catch.',
+                promptTemplate: (task) => `I need you to help me with: ${task}\n\nContext: [Add who this is for and why]\nFormat: [Specify length, structure]\nTone: [Professional/casual/etc]\n\nPlease produce a complete draft I can use with minimal editing.`
+            },
+            refine: {
+                name: 'Refine',
+                description: 'Low risk, but needs your voice',
+                icon: '✍️',
+                timeSaving: 'Medium',
+                timeExplain: 'AI creates the structure, you add the personality. Expect to save 40-60% of time.',
+                workflow: '1. Brief AI with examples of your style\n2. Review draft for tone and voice\n3. Layer your personality over it\n4. One final pass, then send',
+                watchOut: 'The draft may be technically correct but sound generic. Your job is to make it sound like you.',
+                promptTemplate: (task) => `I need a draft for: ${task}\n\nContext: [Add context]\nMy usual style is: [Describe your tone — direct, warm, formal, etc]\nExamples of how I write: [Paste a few sentences you've written before]\n\nCreate a draft that I can refine to match my voice.`
+            },
+            verify: {
+                name: 'Verify',
+                description: 'Higher stakes, but routine',
+                icon: '🔍',
+                timeSaving: 'Medium',
+                timeExplain: 'AI speeds up the first draft, but verification is essential. Expect to save 30-50% of time.',
+                workflow: '1. AI creates first draft\n2. Layer: Check all facts, figures, claims\n3. Loop: Review once more for accuracy\n4. Stop: Don\'t over-polish, just verify',
+                watchOut: 'AI confidently produces plausible-sounding errors. Every factual claim needs checking.',
+                promptTemplate: (task) => `I need help with: ${task}\n\nThis will be seen by: [Audience]\nKey facts that must be accurate: [List them]\nSources to reference: [If applicable]\n\nPlease draft this, and flag any areas where you're uncertain about accuracy.`
+            },
+            own: {
+                name: 'Own',
+                description: 'High stakes, needs your expertise',
+                icon: '🎯',
+                timeSaving: 'Low',
+                timeExplain: 'AI is a thinking partner here, not a drafter. Time saved is minimal, but quality of thinking may improve.',
+                workflow: '1. Use AI to explore options and pressure-test ideas\n2. AI can help structure your thoughts\n3. Write the final version yourself\n4. The decision and words are yours',
+                watchOut: 'Don\'t let AI\'s confident tone sway your judgement. These are decisions where your expertise matters.',
+                promptTemplate: (task) => `I'm working on: ${task}\n\nThis is a high-stakes area where I need to make the final call myself.\n\nPlease help me think through:\n1. What are the key considerations I should weigh?\n2. What are the risks of different approaches?\n3. What questions should I be asking myself?\n\nDon't give me a recommendation — help me think more clearly.`
+            }
+        };
+
+        // Load saved tasks
+        function loadTasks() {
+            const saved = localStorage.getItem('aiTaskSorterV2');
+            if (saved) {
+                tasks = JSON.parse(saved);
+                renderAllTasks();
+                updateInsights();
+            }
+        }
+
+        // Save tasks
+        function saveTasks() {
+            localStorage.setItem('aiTaskSorterV2', JSON.stringify(tasks));
+        }
+
+        // Open questions modal
+        function openQuestions() {
+            const input = document.getElementById('taskInput');
+            const taskName = input.value.trim();
+
+            if (!taskName) {
+                input.focus();
+                return;
+            }
+
+            currentTask = taskName;
+            document.getElementById('currentTaskName').textContent = taskName;
+
+            // Reset answers
+            answers = { risk: null, judgement: null };
+            document.querySelectorAll('.option').forEach(opt => opt.classList.remove('selected'));
+
+            // Show modal
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('taskInput').value = '';
+            document.getElementById('taskInput').focus();
+        }
+
+        // Select option
+        function selectOption(element, question, value) {
+            element.parentNode.querySelectorAll('.option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            answers[question] = value;
+        }
+
+        // Categorize task
+        function categorizeTask() {
+            if (!answers.risk || !answers.judgement) {
+                alert('Please answer both questions to place this task on the matrix.');
+                return;
+            }
+
+            let quadrant;
+
+            // Determine quadrant based on risk (x) and judgement (y)
+            if (answers.risk <= 1 && answers.judgement <= 1) {
+                quadrant = 'delegate'; // Low risk, low judgement
+            } else if (answers.risk <= 1 && answers.judgement >= 2) {
+                quadrant = 'refine'; // Low risk, high judgement
+            } else if (answers.risk >= 2 && answers.judgement <= 1) {
+                quadrant = 'verify'; // High risk, low judgement
+            } else {
+                quadrant = 'own'; // High risk, high judgement
+            }
+
+            // Add task with metadata
+            tasks[quadrant].push({
+                name: currentTask,
+                risk: answers.risk,
+                judgement: answers.judgement,
+                addedAt: new Date().toISOString()
+            });
+
+            saveTasks();
+            renderAllTasks();
+            updateInsights();
+            closeModal();
+        }
+
+        // Render all tasks
+        function renderAllTasks() {
+            ['delegate', 'refine', 'verify', 'own'].forEach(quadrant => {
+                renderQuadrantTasks(quadrant);
+            });
+
+            // Show export section if there are tasks
+            const totalTasks = Object.values(tasks).flat().length;
+            document.getElementById('exportSection').style.display = totalTasks > 0 ? 'block' : 'none';
+            document.getElementById('insightsSection').style.display = totalTasks > 0 ? 'block' : 'none';
+        }
+
+        // Render tasks for a quadrant
+        function renderQuadrantTasks(quadrant) {
+            const container = document.getElementById(`tasks-${quadrant}`);
+            const quadrantTasks = tasks[quadrant];
+
+            if (quadrantTasks.length === 0) {
+                container.innerHTML = '<div class="empty-quadrant">No tasks yet</div>';
+                return;
+            }
+
+            container.innerHTML = quadrantTasks.map((task, index) => `
+                <div class="task-card" onclick="showTaskDetail('${quadrant}', ${index})">
+                    <span class="task-card-name">${escapeHtml(task.name)}</span>
+                    <div class="task-card-actions">
+                        <button class="task-card-btn" onclick="event.stopPropagation(); removeTask('${quadrant}', ${index})" title="Remove">×</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Show task detail
+        function showTaskDetail(quadrant, index) {
+            selectedQuadrant = quadrant;
+            selectedTaskIndex = index;
+
+            const task = tasks[quadrant][index];
+            const config = quadrantConfig[quadrant];
+
+            document.getElementById('detailTaskName').textContent = task.name;
+
+            const badge = document.getElementById('detailQuadrantBadge');
+            badge.textContent = config.name;
+            badge.className = `detail-quadrant-badge ${quadrant}`;
+
+            // Why it landed here
+            let whyText = '';
+            if (task.risk === 1) whyText += 'Low stakes if something goes wrong. ';
+            else if (task.risk === 2) whyText += 'Moderate stakes — errors could cause issues. ';
+            else whyText += 'High stakes — errors could have serious consequences. ';
+
+            if (task.judgement === 1) whyText += 'This is routine work that follows a pattern.';
+            else if (task.judgement === 2) whyText += 'This needs your voice and personal touch.';
+            else whyText += 'This requires your expertise and judgement.';
+
+            document.getElementById('detailWhy').textContent = whyText;
+
+            // Time saving
+            const timeBadge = document.getElementById('detailTimeBadge');
+            timeBadge.innerHTML = `⏱️ ${config.timeSaving} time-saving potential`;
+            document.getElementById('detailTimeExplain').textContent = config.timeExplain;
+
+            // Workflow
+            document.getElementById('detailWorkflow').innerHTML = config.workflow.replace(/\n/g, '<br>');
+
+            // Watch out
+            document.getElementById('detailWatchOut').textContent = config.watchOut;
+
+            // Prompt
+            document.getElementById('detailPrompt').textContent = config.promptTemplate(task.name);
+
+            // Show panel
+            document.getElementById('taskDetailPanel').classList.add('active');
+            document.getElementById('taskDetailPanel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Close detail panel
+        function closeDetailPanel() {
+            document.getElementById('taskDetailPanel').classList.remove('active');
+            selectedTaskIndex = null;
+            selectedQuadrant = null;
+        }
+
+        // Copy prompt
+        function copyPrompt() {
+            const promptText = document.getElementById('detailPrompt').textContent;
+            navigator.clipboard.writeText(promptText).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = 'Copy', 2000);
+            });
+        }
+
+        // Remove task
+        function removeTask(quadrant, index) {
+            tasks[quadrant].splice(index, 1);
+            saveTasks();
+            renderAllTasks();
+            updateInsights();
+
+            if (selectedQuadrant === quadrant && selectedTaskIndex === index) {
+                closeDetailPanel();
+            }
+        }
+
+        // Update insights
+        function updateInsights() {
+            const counts = {
+                delegate: tasks.delegate.length,
+                refine: tasks.refine.length,
+                verify: tasks.verify.length,
+                own: tasks.own.length
+            };
+
+            document.getElementById('countDelegate').textContent = counts.delegate;
+            document.getElementById('countRefine').textContent = counts.refine;
+            document.getElementById('countVerify').textContent = counts.verify;
+            document.getElementById('countOwn').textContent = counts.own;
+
+            // Generate summary
+            const total = counts.delegate + counts.refine + counts.verify + counts.own;
+            const summaryEl = document.getElementById('insightSummary').querySelector('p');
+
+            if (total === 0) {
+                summaryEl.textContent = 'Add tasks to see your insights.';
+                return;
+            }
+
+            let summary = '';
+            const automatable = counts.delegate + counts.refine;
+
+            if (automatable > 0) {
+                summary += `You have ${automatable} task${automatable > 1 ? 's' : ''} where AI can take the first draft. `;
+            }
+
+            if (counts.delegate > 0) {
+                summary += `Your ${counts.delegate} Delegate task${counts.delegate > 1 ? 's' : ''} could save you significant time each week. `;
+            }
+
+            if (counts.own > 0) {
+                summary += `Your ${counts.own} Own task${counts.own > 1 ? 's' : ''} still benefit${counts.own === 1 ? 's' : ''} from AI as a thinking partner.`;
+            }
+
+            summaryEl.textContent = summary || 'Keep adding tasks to build a complete picture of your workflow.';
+        }
+
+        // Toggle tips
+        function toggleTips() {
+            document.getElementById('tipsSection').classList.toggle('expanded');
+        }
+
+        // Clear all tasks
+        function clearAllTasks() {
+            if (confirm('Remove all tasks and start over?')) {
+                tasks = { delegate: [], refine: [], verify: [], own: [] };
+                saveTasks();
+                renderAllTasks();
+                updateInsights();
+                closeDetailPanel();
+            }
+        }
+
+        // Export as text
+        function exportAsText() {
+            let text = 'AI TASK SORTER — YOUR TASK MATRIX\n';
+            text += '===================================\n\n';
+
+            const quadrants = [
+                { key: 'delegate', label: 'DELEGATE — Let AI handle it' },
+                { key: 'refine', label: 'REFINE — AI drafts, you add voice' },
+                { key: 'verify', label: 'VERIFY — AI drafts, you check facts' },
+                { key: 'own', label: 'OWN — You lead, AI supports' }
+            ];
+
+            quadrants.forEach(q => {
+                text += `${q.label}\n`;
+                text += '-'.repeat(q.label.length) + '\n';
+                if (tasks[q.key].length) {
+                    tasks[q.key].forEach(t => text += `• ${t.name}\n`);
+                } else {
+                    text += '(No tasks)\n';
+                }
+                text += '\n';
+            });
+
+            text += '\nKEY INSIGHTS\n';
+            text += '------------\n';
+            text += document.getElementById('insightSummary').querySelector('p').textContent + '\n';
+
+            text += '\n\nGenerated by AI Task Sorter\n';
+            text += 'Part of the AI GOLD Toolkit\n';
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ai-task-matrix.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Handle Enter key
+        document.getElementById('taskInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                openQuestions();
+            }
+        });
+
+        // Close modal on overlay click
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Load on page load
+        loadTasks();
+    </script>
+</body>
+</html>
