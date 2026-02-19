@@ -446,13 +446,21 @@
                   <span style={{fontSize:20,lineHeight:"24px"}}>&#x1F4CB;</span>
                   <div>
                     <div style={{fontSize:13,fontWeight:600,color:"#b85c1e",marginBottom:4}}>One step from you</div>
-                    <div style={{fontSize:13,color:"#2d2d2d",lineHeight:1.6}}>
-                      Click <strong>Print / Save as PDF</strong> below, then email the PDF to <strong>elaine@elainegoldconsulting.com</strong> — this lets Elaine prepare your session in advance.
+                    <div style={{fontSize:13,color:"#2d2d2d",lineHeight:1.7}}>
+                      <strong>Step 1:</strong> Click <strong>Print / Save as PDF</strong> and save the file to your device.<br/>
+                      <strong>Step 2:</strong> Click <strong>Email my summary to Elaine</strong> — this opens a pre-filled email. Attach the PDF you just saved, then hit send.
                     </div>
                   </div>
                 </div>
                 <div className="print-btn no-print">
                   <button className="btn btn-primary" onClick={() => window.print()}>Print / Save as PDF</button>
+                  <button className="btn btn-secondary" onClick={() => {
+                    const subject = encodeURIComponent("AI Diagnostic — " + (name || "Pre-session summary"));
+                    const body = encodeURIComponent(
+                      "Hi Elaine,\n\nPlease find my pre-session diagnostic summary attached as a PDF.\n\nName: " + (name || "—") + "\nConfidence level: " + confidenceLabel(answers["A3"]) + "\nPriority task: " + (answers["B2"] || "—") + "\nWhat 'better' looks like: " + (answers["B3"] || "—") + "\n\nLooking forward to our session.\n\nBest wishes"
+                    );
+                    window.location.href = "mailto:elaine@elaine-gold.com?subject=" + subject + "&body=" + body;
+                  }}>&#9993; Email my summary to Elaine</button>
                   <button className="btn btn-secondary" onClick={() => setStep(0)}>Edit responses</button>
                 </div>
                 <div className="report-tabs no-print">
@@ -465,7 +473,7 @@
                 <div className="footer-bar">
                   <div style={{fontSize:13,color:"#6b7280",lineHeight:1.6}}>
                     <strong style={{color:"#dd722a"}}>Elaine Gold Consulting</strong> &middot; AI + Human Connection<br/>
-                    Questions? <a href="mailto:elaine@elainegoldconsulting.com" style={{color:"#dd722a"}}>elaine@elainegoldconsulting.com</a>
+                    Questions? <a href="mailto:elaine@elaine-gold.com" style={{color:"#dd722a"}}>elaine@elaine-gold.com</a>
                   </div>
                 </div>
               </div>
