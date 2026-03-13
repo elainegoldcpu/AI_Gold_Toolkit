@@ -4,408 +4,164 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AI Task Sorter – Elaine Gold Consulting</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=Source+Sans+3:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --primary: #dd722a;
-      --primary-light: #f0924e;
       --primary-dark: #b85a1e;
       --bg: #fefaec;
       --white: #ffffff;
       --text: #2c2416;
       --text-light: #6b5d4f;
       --border: #e8dcc8;
-      --teal: #2d7a72;
-      --teal-light: #e8f4f3;
-      --green: #2d6a4f;
-      --green-light: #e8f4ee;
-      --amber: #b8860b;
-      --amber-light: #fdf6e3;
-      --red: #9b2c2c;
-      --red-light: #fdf0f0;
-      --shadow: rgba(14, 9, 6, 0.08);
+      --shadow: rgba(14,9,6,0.08);
+      --stars-bg: #fffbec; --stars-border: #e8c97a; --stars-dot: #c8960a;
+      --hitl-bg: #fff4ec; --hitl-border: #f0b88a; --hitl-dot: #dd722a;
+      --lower-bg: #f4f4f4; --lower-border: #cccccc;
+      --dnt-bg: #fff0f0; --dnt-border: #f0aaaa; --dnt-dot: #c0392b;
     }
-
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Source Sans 3', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
 
-    body {
-      font-family: 'Source Sans 3', sans-serif;
-      background-color: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      font-size: 16px;
-      line-height: 1.6;
-    }
+    header { background: var(--white); border-bottom: 3px solid var(--primary); padding: 22px 24px; text-align: center; }
+    header h1 { font-family: 'DM Serif Text', serif; font-size: 1.85rem; color: var(--primary); margin-bottom: 4px; }
+    header .subtitle { color: var(--text-light); font-size: 0.95rem; }
+    header .brand { font-size: 0.78rem; color: var(--text-light); margin-top: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
 
-    header {
-      background: var(--white);
-      border-bottom: 3px solid var(--primary);
-      padding: 20px 24px;
-      text-align: center;
-    }
+    .container { max-width: 800px; margin: 0 auto; padding: 36px 20px 80px; }
 
-    header h1 {
-      font-family: 'DM Serif Text', serif;
-      font-size: 1.8rem;
-      color: var(--primary);
-      margin-bottom: 4px;
-    }
+    .step { display: none; }
+    .step.active { display: block; }
 
-    header p {
-      color: var(--text-light);
-      font-size: 0.95rem;
-    }
+    .card { background: var(--white); border-radius: 14px; padding: 30px 34px; border: 1px solid var(--border); box-shadow: 0 2px 12px var(--shadow); margin-bottom: 24px; }
+    .card h2 { font-family: 'DM Serif Text', serif; font-size: 1.25rem; margin-bottom: 12px; }
+    .card p { color: var(--text-light); font-size: 0.95rem; margin-bottom: 8px; }
 
-    header .brand {
-      font-size: 0.8rem;
-      color: var(--text-light);
-      margin-top: 6px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
+    .input-row { display: flex; gap: 10px; margin-bottom: 8px; }
+    .task-input { flex: 1; padding: 12px 16px; border: 2px solid var(--border); border-radius: 8px; font-family: 'Source Sans 3', sans-serif; font-size: 0.95rem; background: var(--bg); color: var(--text); outline: none; transition: border-color 0.2s; }
+    .task-input:focus { border-color: var(--primary); background: var(--white); }
+    .task-input::placeholder { color: #bbb; }
 
-    .container {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 32px 20px 60px;
-    }
+    .btn-primary { padding: 12px 22px; background: var(--primary); color: var(--white); border: none; border-radius: 8px; font-family: 'Source Sans 3', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; white-space: nowrap; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
 
-    .intro-card {
-      background: var(--white);
-      border-radius: 12px;
-      padding: 28px 32px;
-      margin-bottom: 32px;
-      border: 1px solid var(--border);
-      box-shadow: 0 2px 8px var(--shadow);
-    }
+    .hint { font-size: 0.82rem; color: var(--text-light); margin-bottom: 16px; }
 
-    .intro-card h2 {
-      font-family: 'DM Serif Text', serif;
-      font-size: 1.25rem;
-      color: var(--text);
-      margin-bottom: 12px;
-    }
+    .task-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip { display: flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 20px; font-size: 0.88rem; animation: pop 0.15s ease; }
+    @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .chip button { background: none; border: none; color: var(--text-light); cursor: pointer; font-size: 0.9rem; padding: 0 2px; }
+    .chip button:hover { color: var(--dnt-dot); }
 
-    .intro-card p {
-      color: var(--text-light);
-      font-size: 0.95rem;
-      margin-bottom: 8px;
-    }
+    .task-rate-card { background: var(--white); border-radius: 14px; padding: 28px 32px; border: 1px solid var(--border); box-shadow: 0 2px 12px var(--shadow); margin-bottom: 20px; }
+    .task-rate-card h3 { font-family: 'DM Serif Text', serif; font-size: 1.1rem; margin-bottom: 18px; }
+    .task-num { display: inline-block; background: var(--primary); color: white; border-radius: 50%; width: 26px; height: 26px; text-align: center; line-height: 26px; font-size: 0.82rem; font-weight: 700; margin-right: 8px; }
 
-    .task-input-section {
-      background: var(--white);
-      border-radius: 12px;
-      padding: 28px 32px;
-      margin-bottom: 24px;
-      border: 1px solid var(--border);
-      box-shadow: 0 2px 8px var(--shadow);
-    }
+    .rating-group { margin-bottom: 18px; }
+    .rating-group > label { display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 8px; }
+    .rating-group .sub { font-weight: 400; color: var(--text-light); font-size: 0.82rem; display: block; margin-top: 2px; }
+    .rating-options { display: flex; gap: 8px; }
+    .rating-btn { flex: 1; padding: 9px 6px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg); font-family: 'Source Sans 3', sans-serif; font-size: 0.88rem; cursor: pointer; transition: all 0.15s; text-align: center; color: var(--text); }
+    .rating-btn:hover { border-color: var(--primary); }
+    .sel-low { background: #f0f4ff !important; border-color: #7a9ad4 !important; color: #2c4a8a !important; font-weight: 600 !important; }
+    .sel-med { background: var(--hitl-bg) !important; border-color: var(--hitl-dot) !important; color: var(--primary-dark) !important; font-weight: 600 !important; }
+    .sel-high-save { background: var(--stars-bg) !important; border-color: var(--stars-dot) !important; color: #7a5c00 !important; font-weight: 600 !important; }
+    .sel-high-risk { background: var(--dnt-bg) !important; border-color: var(--dnt-dot) !important; color: #8a1a1a !important; font-weight: 600 !important; }
 
-    .task-input-section h2 {
-      font-family: 'DM Serif Text', serif;
-      font-size: 1.2rem;
-      color: var(--text);
-      margin-bottom: 16px;
-    }
+    /* QUADRANT */
+    .quadrant-wrap { background: var(--white); border-radius: 14px; padding: 28px; border: 1px solid var(--border); box-shadow: 0 2px 12px var(--shadow); margin-bottom: 28px; }
+    .quadrant-wrap h3 { font-family: 'DM Serif Text', serif; font-size: 1.1rem; margin-bottom: 20px; }
 
-    .input-row {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
+    .q-outer { display: flex; gap: 0; }
+    .q-y-axis { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 28px; flex-shrink: 0; }
+    .q-y-label { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.72rem; font-weight: 700; color: var(--text-light); letter-spacing: 0.08em; text-transform: uppercase; }
+    .q-y-arrows { display: flex; flex-direction: column; justify-content: space-between; font-size: 0.7rem; color: var(--text-light); height: 100%; padding: 4px 0; }
 
-    .task-input {
-      flex: 1;
-      padding: 12px 16px;
-      border: 2px solid var(--border);
-      border-radius: 8px;
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 0.95rem;
-      color: var(--text);
-      background: var(--bg);
-      transition: border-color 0.2s;
-      outline: none;
-    }
+    .q-main { flex: 1; }
+    .q-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
 
-    .task-input:focus {
-      border-color: var(--primary);
-      background: var(--white);
-    }
+    .q-cell { padding: 14px 16px; border: 1px solid var(--border); min-height: 130px; }
+    .q-cell.stars { background: var(--stars-bg); border-color: var(--stars-border); border-radius: 10px 0 0 0; }
+    .q-cell.hitl { background: var(--hitl-bg); border-color: var(--hitl-border); border-radius: 0 10px 0 0; }
+    .q-cell.lower { background: var(--lower-bg); border-color: var(--lower-border); border-radius: 0 0 0 10px; }
+    .q-cell.dnt { background: var(--dnt-bg); border-color: var(--dnt-border); border-radius: 0 0 10px 0; }
 
-    .task-input::placeholder { color: #aaa; }
+    .q-cell-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+    .stars .q-cell-label { color: var(--stars-dot); }
+    .hitl .q-cell-label { color: var(--hitl-dot); }
+    .lower .q-cell-label { color: #777; }
+    .dnt .q-cell-label { color: var(--dnt-dot); }
 
-    .btn-add {
-      padding: 12px 24px;
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      border-radius: 8px;
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-      white-space: nowrap;
-    }
+    .q-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .q-tag { display: inline-block; padding: 3px 9px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .stars .q-tag { background: #fef3c7; color: #7a5c00; border: 1px solid var(--stars-border); }
+    .hitl .q-tag { background: #fff0e0; color: var(--primary-dark); border: 1px solid var(--hitl-border); }
+    .lower .q-tag { background: #ebebeb; color: #555; border: 1px solid #ccc; }
+    .dnt .q-tag { background: #ffe8e8; color: #8a1a1a; border: 1px solid var(--dnt-border); }
+    .q-empty { font-size: 0.78rem; color: #bbb; font-style: italic; }
 
-    .btn-add:hover { background: var(--primary-dark); }
+    .q-x-axis { display: flex; justify-content: space-between; padding: 6px 0 0; font-size: 0.72rem; color: var(--text-light); }
+    .q-x-label { text-align: center; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-light); margin-top: 2px; }
 
-    .hint {
-      font-size: 0.82rem;
-      color: var(--text-light);
-      margin-top: -8px;
-      margin-bottom: 16px;
-    }
+    .q-hi-lo { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-light); padding: 0 2px; margin-top: 2px; }
 
-    .task-list {
-      list-style: none;
-    }
+    /* GROUPED LIST */
+    .category-block { border-radius: 12px; padding: 22px 26px; margin-bottom: 16px; border: 1px solid transparent; }
+    .stars-block { background: var(--stars-bg); border-color: var(--stars-border); }
+    .hitl-block { background: var(--hitl-bg); border-color: var(--hitl-border); }
+    .lower-block { background: var(--lower-bg); border-color: var(--lower-border); }
+    .dnt-block { background: var(--dnt-bg); border-color: var(--dnt-border); }
 
-    .task-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 14px;
-      background: var(--bg);
-      border-radius: 8px;
-      margin-bottom: 8px;
-      border: 1px solid var(--border);
-      animation: slideIn 0.2s ease;
-    }
+    .cat-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+    .cat-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; margin-top: 2px; }
+    .stars-block .cat-icon { background: var(--stars-dot); color: white; }
+    .hitl-block .cat-icon { background: var(--hitl-dot); color: white; }
+    .lower-block .cat-icon { background: #888; color: white; }
+    .dnt-block .cat-icon { background: var(--dnt-dot); color: white; }
 
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .cat-title { font-family: 'DM Serif Text', serif; font-size: 1.05rem; }
+    .stars-block .cat-title { color: #7a5c00; }
+    .hitl-block .cat-title { color: var(--primary-dark); }
+    .lower-block .cat-title { color: #555; }
+    .dnt-block .cat-title { color: #8a1a1a; }
+    .cat-desc { font-size: 0.82rem; color: var(--text-light); margin-top: 2px; }
 
-    .task-item span {
-      flex: 1;
-      font-size: 0.95rem;
-    }
+    .task-result-list { list-style: none; }
+    .task-result-item { padding: 10px 14px; background: rgba(255,255,255,0.75); border-radius: 8px; margin-bottom: 8px; }
+    .task-result-item strong { display: block; font-size: 0.95rem; margin-bottom: 3px; }
+    .task-result-item .why { font-size: 0.82rem; color: var(--text-light); font-style: italic; }
+    .empty-cat { font-size: 0.85rem; color: #bbb; font-style: italic; }
 
-    .btn-remove {
-      background: none;
-      border: none;
-      color: var(--text-light);
-      cursor: pointer;
-      font-size: 1.1rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      transition: color 0.2s, background 0.2s;
-    }
-
-    .btn-remove:hover { color: var(--red); background: var(--red-light); }
-
-    .btn-sort {
-      display: block;
-      width: 100%;
-      padding: 16px;
-      background: var(--primary);
-      color: var(--white);
-      border: none;
-      border-radius: 10px;
-      font-family: 'DM Serif Text', serif;
-      font-size: 1.15rem;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-      margin-top: 8px;
-    }
-
-    .btn-sort:hover { background: var(--primary-dark); transform: translateY(-1px); }
-    .btn-sort:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-
-    /* Results */
-    .results-section {
-      display: none;
-    }
-
-    .results-section.visible { display: block; }
-
-    .results-header {
-      text-align: center;
-      margin-bottom: 28px;
-    }
-
-    .results-header h2 {
-      font-family: 'DM Serif Text', serif;
-      font-size: 1.5rem;
-      color: var(--text);
-      margin-bottom: 6px;
-    }
-
-    .results-header p {
-      color: var(--text-light);
-      font-size: 0.9rem;
-    }
-
-    .category-block {
-      border-radius: 12px;
-      padding: 24px 28px;
-      margin-bottom: 20px;
-      border: 1px solid transparent;
-    }
-
-    .category-block.green { background: var(--green-light); border-color: #a8d5b5; }
-    .category-block.amber { background: var(--amber-light); border-color: #e0c97a; }
-    .category-block.red { background: var(--red-light); border-color: #e0a0a0; }
-    .category-block.teal { background: var(--teal-light); border-color: #a0ccc8; }
-
-    .category-header {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 14px;
-    }
-
-    .category-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.1rem;
-      flex-shrink: 0;
-    }
-
-    .green .category-icon { background: var(--green); color: white; }
-    .amber .category-icon { background: var(--amber); color: white; }
-    .red .category-icon { background: var(--red); color: white; }
-    .teal .category-icon { background: var(--teal); color: white; }
-
-    .category-title {
-      font-family: 'DM Serif Text', serif;
-      font-size: 1.1rem;
-    }
-
-    .green .category-title { color: var(--green); }
-    .amber .category-title { color: var(--amber); }
-    .red .category-title { color: var(--red); }
-    .teal .category-title { color: var(--teal); }
-
-    .category-desc {
-      font-size: 0.85rem;
-      color: var(--text-light);
-      margin-top: 2px;
-    }
-
-    .task-result-list {
-      list-style: none;
-    }
-
-    .task-result-item {
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.7);
-      border-radius: 8px;
-      margin-bottom: 8px;
-      font-size: 0.95rem;
-    }
-
-    .task-result-item strong {
-      display: block;
-      margin-bottom: 3px;
-    }
-
-    .task-result-item .why {
-      font-size: 0.82rem;
-      color: var(--text-light);
-      font-style: italic;
-    }
-
-    .empty-category {
-      font-size: 0.88rem;
-      color: var(--text-light);
-      font-style: italic;
-    }
-
-    .loading-state {
-      text-align: center;
-      padding: 40px 20px;
-    }
-
-    .loading-state .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 16px;
-    }
-
+    .loading-box { text-align: center; padding: 48px 20px; background: var(--white); border-radius: 14px; border: 1px solid var(--border); }
+    .spinner { width: 38px; height: 38px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .loading-state p { color: var(--text-light); font-size: 0.95rem; }
+    .results-intro { text-align: center; margin-bottom: 32px; }
+    .results-intro h2 { font-family: 'DM Serif Text', serif; font-size: 1.6rem; margin-bottom: 6px; }
+    .results-intro p { color: var(--text-light); font-size: 0.92rem; }
 
-    .action-buttons {
-      display: flex;
-      gap: 12px;
-      margin-top: 28px;
-      flex-wrap: wrap;
-    }
-
-    .btn-secondary {
-      padding: 12px 24px;
-      background: var(--white);
-      color: var(--primary);
-      border: 2px solid var(--primary);
-      border-radius: 8px;
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
+    .action-row { display: flex; gap: 12px; margin-top: 28px; flex-wrap: wrap; }
+    .btn-secondary { padding: 12px 22px; background: var(--white); color: var(--primary); border: 2px solid var(--primary); border-radius: 8px; font-family: 'Source Sans 3', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-secondary:hover { background: var(--primary); color: var(--white); }
+    .btn-teal { padding: 12px 22px; background: #2d7a72; color: var(--white); border: none; border-radius: 8px; font-family: 'Source Sans 3', sans-serif; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+    .btn-teal:hover { background: #1e5550; }
 
-    .btn-print {
-      padding: 12px 24px;
-      background: var(--teal);
-      color: var(--white);
-      border: none;
-      border-radius: 8px;
-      font-family: 'Source Sans 3', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
+    footer { text-align: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); font-size: 0.82rem; color: var(--text-light); }
+    footer a { color: var(--primary); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
 
-    .btn-print:hover { background: #235f58; }
-
-    .footer-note {
-      text-align: center;
-      margin-top: 40px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border);
-      font-size: 0.82rem;
-      color: var(--text-light);
-    }
-
-    .footer-note a { color: var(--primary); text-decoration: none; }
-    .footer-note a:hover { text-decoration: underline; }
-
-    .error-msg {
-      background: var(--red-light);
-      border: 1px solid #e0a0a0;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 0.9rem;
-      color: var(--red);
-      margin-top: 12px;
-    }
-
-    @media (max-width: 540px) {
+    @media (max-width: 560px) {
       .input-row { flex-direction: column; }
-      .action-buttons { flex-direction: column; }
+      .rating-options { flex-direction: column; }
+      .action-row { flex-direction: column; }
       header h1 { font-size: 1.4rem; }
-      .task-input-section, .intro-card { padding: 20px; }
+      .card, .task-rate-card { padding: 20px; }
     }
 
     @media print {
-      header, .task-input-section, .intro-card, .action-buttons, .footer-note { display: none; }
-      .results-section { display: block !important; }
+      header .brand, footer, .action-row, #step1, #step2 { display: none !important; }
+      #step3 { display: block !important; }
       body { background: white; }
     }
   </style>
@@ -414,284 +170,283 @@
 
 <header>
   <h1>AI Task Sorter</h1>
-  <p>Find out which of your tasks are ready for AI — and which ones aren't</p>
+  <p class="subtitle">Rate your tasks, see where they land — and know what to do next</p>
   <div class="brand">Elaine Gold Consulting · AI + Human Connection</div>
 </header>
 
 <div class="container">
 
-  <div class="intro-card">
-    <h2>How it works</h2>
-    <p>Add the tasks you're considering handing to AI. The tool will sort them into four categories: tasks to start with, tasks to approach with care, tasks to keep human, and tasks that need clearer instructions before AI can help.</p>
-    <p>You'll get a plain-English explanation for each one — no jargon, no hype.</p>
-  </div>
-
-  <div class="task-input-section">
-    <h2>Add your tasks</h2>
-    <div class="input-row">
-      <input type="text" class="task-input" id="taskInput" placeholder="e.g. drafting client emails, summarising meeting notes…" maxlength="200" />
-      <button class="btn-add" onclick="addTask()">Add</button>
+  <!-- STEP 1 -->
+  <div class="step active" id="step1">
+    <div class="card">
+      <h2>Step 1 — Add your tasks</h2>
+      <p>List the tasks you're thinking of handing to AI. Be specific — "drafting follow-up emails" works better than "emails".</p>
+      <p>Aim for 3–10 tasks.</p>
     </div>
-    <p class="hint">Press Enter or click Add. Aim for 3–10 tasks for the most useful results.</p>
-    <ul class="task-list" id="taskList"></ul>
-    <button class="btn-sort" id="sortBtn" onclick="sortTasks()" disabled>Sort my tasks →</button>
-    <div id="errorMsg"></div>
-  </div>
-
-  <div class="results-section" id="resultsSection">
-    <div class="results-header">
-      <h2>Your AI Task Sort</h2>
-      <p>Based on the tasks you added. Review before acting — context always matters.</p>
-    </div>
-    <div id="resultsContent"></div>
-    <div class="action-buttons">
-      <button class="btn-print" onclick="window.print()">Save as PDF</button>
-      <button class="btn-secondary" onclick="startOver()">Sort different tasks</button>
+    <div class="card">
+      <div class="input-row">
+        <input type="text" class="task-input" id="taskInput" placeholder="e.g. summarising meeting notes, drafting proposals…" maxlength="120" />
+        <button class="btn-primary" onclick="addTask()">Add</button>
+      </div>
+      <p class="hint">Press Enter or click Add after each task.</p>
+      <div class="task-chips" id="taskChips"></div>
+      <br>
+      <button class="btn-primary" id="toRateBtn" onclick="goToRate()" disabled style="width:100%;padding:15px;font-size:1rem;">Rate my tasks →</button>
     </div>
   </div>
 
-  <div class="footer-note">
-    <p>A tool from <a href="https://www.elaine-gold.com" target="_blank">Elaine Gold Consulting</a> · Questions? <a href="mailto:elaine@elaine-gold.com">elaine@elaine-gold.com</a></p>
+  <!-- STEP 2 -->
+  <div class="step" id="step2">
+    <div class="card">
+      <h2>Step 2 — Rate each task</h2>
+      <p>Two quick questions per task. Answer for your situation — there are no wrong answers.</p>
+    </div>
+    <div id="ratingCards"></div>
+    <button class="btn-primary" id="toResultsBtn" onclick="goToResults()" style="width:100%;padding:15px;font-size:1rem;margin-top:8px;" disabled>See my results →</button>
   </div>
+
+  <!-- STEP 3 -->
+  <div class="step" id="step3">
+    <div id="resultsArea"></div>
+  </div>
+
+  <footer>
+    <p>A tool from <a href="https://www.elaine-gold.com" target="_blank">Elaine Gold Consulting</a> · <a href="mailto:elaine@elaine-gold.com">elaine@elaine-gold.com</a></p>
+  </footer>
 
 </div>
 
 <script>
   let tasks = [];
+  let ratings = {};
 
   const taskInput = document.getElementById('taskInput');
-  const taskList = document.getElementById('taskList');
-  const sortBtn = document.getElementById('sortBtn');
-  const resultsSection = document.getElementById('resultsSection');
-  const resultsContent = document.getElementById('resultsContent');
-  const errorMsg = document.getElementById('errorMsg');
-
-  taskInput.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') addTask();
-  });
+  taskInput.addEventListener('keydown', e => { if (e.key === 'Enter') addTask(); });
 
   function addTask() {
     const val = taskInput.value.trim();
-    if (!val) return;
-    if (tasks.length >= 15) {
-      showError('You have reached the maximum of 15 tasks.');
-      return;
-    }
+    if (!val || tasks.length >= 12) return;
     tasks.push(val);
-    renderTaskList();
     taskInput.value = '';
     taskInput.focus();
-    clearError();
-    sortBtn.disabled = tasks.length === 0;
+    renderChips();
+    document.getElementById('toRateBtn').disabled = false;
   }
 
-  function removeTask(index) {
-    tasks.splice(index, 1);
-    renderTaskList();
-    sortBtn.disabled = tasks.length === 0;
+  function removeTask(i) {
+    tasks.splice(i, 1);
+    renderChips();
+    document.getElementById('toRateBtn').disabled = tasks.length === 0;
   }
 
-  function renderTaskList() {
-    taskList.innerHTML = '';
+  function renderChips() {
+    document.getElementById('taskChips').innerHTML = tasks.map((t, i) =>
+      `<div class="chip"><span>${esc(t)}</span><button onclick="removeTask(${i})">✕</button></div>`
+    ).join('');
+  }
+
+  function goToRate() {
+    if (!tasks.length) return;
+    ratings = {};
+    document.getElementById('step1').classList.remove('active');
+    document.getElementById('step2').classList.add('active');
+
+    const wrap = document.getElementById('ratingCards');
+    wrap.innerHTML = tasks.map((task, i) => `
+      <div class="task-rate-card">
+        <h3><span class="task-num">${i+1}</span>${esc(task)}</h3>
+        <div class="rating-group">
+          <label>How much time could AI save you on this task?
+            <span class="sub">Think about frequency and how long it takes you</span>
+          </label>
+          <div class="rating-options">
+            <button class="rating-btn" id="save_${i}_low" onclick="setRating(${i},'save','low')">Low</button>
+            <button class="rating-btn" id="save_${i}_med" onclick="setRating(${i},'save','med')">Medium</button>
+            <button class="rating-btn" id="save_${i}_high" onclick="setRating(${i},'save','high')">High</button>
+          </div>
+        </div>
+        <div class="rating-group">
+          <label>How risky is it if AI gets this wrong?
+            <span class="sub">Consider impact on clients, trust, accuracy, or confidentiality</span>
+          </label>
+          <div class="rating-options">
+            <button class="rating-btn" id="risk_${i}_low" onclick="setRating(${i},'risk','low')">Low</button>
+            <button class="rating-btn" id="risk_${i}_med" onclick="setRating(${i},'risk','med')">Medium</button>
+            <button class="rating-btn" id="risk_${i}_high" onclick="setRating(${i},'risk','high')">High</button>
+          </div>
+        </div>
+      </div>`).join('');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function setRating(taskIdx, axis, val) {
+    if (!ratings[taskIdx]) ratings[taskIdx] = {};
+    ratings[taskIdx][axis] = val;
+
+    ['low','med','high'].forEach(v => {
+      const btn = document.getElementById(`${axis}_${taskIdx}_${v}`);
+      if (!btn) return;
+      btn.className = 'rating-btn';
+      if (v === val) {
+        if (axis === 'save') btn.classList.add(v === 'low' ? 'sel-low' : v === 'med' ? 'sel-med' : 'sel-high-save');
+        else btn.classList.add(v === 'low' ? 'sel-low' : v === 'med' ? 'sel-med' : 'sel-high-risk');
+      }
+    });
+
+    const allDone = tasks.every((_, i) => ratings[i] && ratings[i].save && ratings[i].risk);
+    document.getElementById('toResultsBtn').disabled = !allDone;
+  }
+
+  function getQuadrant(save, risk) {
+    const s = {low:1,med:2,high:3};
+    const sv = s[save], rv = s[risk];
+    if (rv === 3 && sv <= 1) return 'dnt';
+    if (rv === 3) return 'hitl';
+    if (sv >= 2 && rv <= 1) return 'stars';
+    if (sv === 3 && rv === 2) return 'hitl';
+    if (sv === 2 && rv === 2) return 'hitl';
+    if (sv <= 1 && rv >= 2) return 'dnt';
+    return 'lower';
+  }
+
+  const whyMap = {
+    stars: [
+      "High time-saving, low risk — a strong starting point for AI.",
+      "Repeatable and low-stakes. This is where AI earns its keep.",
+      "Good candidate to automate with confidence — start here."
+    ],
+    hitl: [
+      "AI can help here, but errors matter — always review before using the output.",
+      "Worth using AI as a first draft, with your judgment applied before it goes anywhere.",
+      "The time saving is real, but so is the risk — keep a human in the loop."
+    ],
+    lower: [
+      "AI won't save you much time here. Prioritise other tasks first.",
+      "Lower return on effort — focus your AI energy on higher-value tasks.",
+      "Not a priority for AI right now. Come back to this once you've got bigger wins."
+    ],
+    dnt: [
+      "The risk of errors is too high to hand this to AI without significant safeguards.",
+      "Keep this human for now — the downside of AI getting it wrong is too significant.",
+      "Not suitable for AI without very tight controls and thorough review processes."
+    ]
+  };
+
+  function getWhy(q) {
+    const opts = whyMap[q];
+    return opts[Math.floor(Math.random() * opts.length)];
+  }
+
+  function shortLabel(str) {
+    return str.length > 22 ? str.slice(0, 20) + '…' : str;
+  }
+
+  async function goToResults() {
+    document.getElementById('step2').classList.remove('active');
+    document.getElementById('step3').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const area = document.getElementById('resultsArea');
+    area.innerHTML = `<div class="loading-box"><div class="spinner"></div><p>Building your results…</p></div>`;
+
+    const sorted = { stars: [], hitl: [], lower: [], dnt: [] };
     tasks.forEach((task, i) => {
-      const li = document.createElement('li');
-      li.className = 'task-item';
-      li.innerHTML = `<span>${escapeHtml(task)}</span><button class="btn-remove" onclick="removeTask(${i})" title="Remove">✕</button>`;
-      taskList.appendChild(li);
-    });
-    sortBtn.disabled = tasks.length === 0;
-  }
-
-  function escapeHtml(str) {
-    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function showError(msg) {
-    errorMsg.innerHTML = `<div class="error-msg">${msg}</div>`;
-  }
-
-  function clearError() {
-    errorMsg.innerHTML = '';
-  }
-
-  async function sortTasks() {
-    if (tasks.length === 0) return;
-
-    // Show loading
-    resultsSection.classList.add('visible');
-    resultsContent.innerHTML = `
-      <div class="loading-state">
-        <div class="spinner"></div>
-        <p>Sorting your tasks…</p>
-      </div>`;
-    
-    document.querySelector('.task-input-section').style.display = 'none';
-    document.querySelector('.intro-card').style.display = 'none';
-    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-    const taskListText = tasks.map((t, i) => `${i+1}. ${t}`).join('\n');
-
-    const prompt = `You are an expert AI adoption consultant helping a professional decide which tasks are suitable for AI assistance.
-
-Analyse this list of tasks and sort each one into exactly one of these four categories:
-
-1. START HERE — Tasks that are low-risk, repeatable, and clearly suited to AI now. Good first wins.
-2. USE WITH CARE — Tasks where AI can help but human review and judgment are essential. Not set-and-forget.
-3. KEEP HUMAN — Tasks where AI involvement risks quality, trust, client relationships, or confidentiality. Avoid or approach very carefully.
-4. REFINE THE BRIEF FIRST — Tasks where the instruction to AI isn't clear enough yet. Need better prompts or clearer parameters before AI can help well.
-
-Tasks to sort:
-${taskListText}
-
-Respond with ONLY valid JSON in this exact structure, no other text:
-{
-  "start_here": [
-    {"task": "exact task text", "why": "one sentence explanation in plain English"}
-  ],
-  "use_with_care": [
-    {"task": "exact task text", "why": "one sentence explanation in plain English"}
-  ],
-  "keep_human": [
-    {"task": "exact task text", "why": "one sentence explanation in plain English"}
-  ],
-  "refine_first": [
-    {"task": "exact task text", "why": "one sentence explanation in plain English"}
-  ]
-}
-
-Rules:
-- Every task must appear in exactly one category
-- Keep the task text close to the original wording
-- The "why" should be practical, direct, and jargon-free
-- Do not add extra fields or commentary outside the JSON`;
-
-    try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
-
-      const data = await response.json();
-      const text = data.content && data.content[0] && data.content[0].text;
-
-      if (!text) throw new Error('No response from API');
-
-      const clean = text.replace(/```json|```/g, '').trim();
-      const result = JSON.parse(clean);
-      renderResults(result);
-
-    } catch (err) {
-      // Fallback: rule-based sorting
-      const fallback = ruleBasedSort(tasks);
-      renderResults(fallback);
-    }
-  }
-
-  function ruleBasedSort(taskList) {
-    const startHere = [];
-    const useWithCare = [];
-    const keepHuman = [];
-    const refineFirst = [];
-
-    const startKeywords = ['summaris', 'draft', 'template', 'schedule', 'research', 'notes', 'transcri', 'format', 'proofread', 'translat', 'bullet', 'agenda', 'outline'];
-    const careKeywords = ['email', 'report', 'proposal', 'social media', 'blog', 'content', 'presenta', 'analys', 'review'];
-    const humanKeywords = ['legal', 'contract', 'confidential', 'client call', 'feedback', 'counsel', 'advice', 'sensitive', 'complaint', 'negotiat', 'disciplin', 'HR', 'strategy'];
-    const refineKeywords = ['improve', 'help with', 'assist', 'general', 'various', 'other', 'miscellaneous', 'things', 'stuff'];
-
-    taskList.forEach(task => {
-      const t = task.toLowerCase();
-      if (humanKeywords.some(k => t.includes(k))) {
-        keepHuman.push({ task, why: 'This involves judgment, trust, or sensitivity — keep a human in the lead.' });
-      } else if (refineKeywords.some(k => t.includes(k))) {
-        refineFirst.push({ task, why: 'The instruction is too broad for AI to help reliably — sharpen it first.' });
-      } else if (careKeywords.some(k => t.includes(k))) {
-        useWithCare.push({ task, why: 'AI can help here, but always review the output before using it.' });
-      } else if (startKeywords.some(k => t.includes(k))) {
-        startHere.push({ task, why: 'A good starting point — clear, repeatable, and low-risk.' });
-      } else {
-        useWithCare.push({ task, why: 'Approach with care — AI may help, but your review is important.' });
-      }
+      const { save, risk } = ratings[i];
+      const q = getQuadrant(save, risk);
+      sorted[q].push({ task, why: getWhy(q) });
     });
 
-    return { start_here: startHere, use_with_care: useWithCare, keep_human: keepHuman, refine_first: refineFirst };
-  }
+    await new Promise(r => setTimeout(r, 500));
 
-  function renderResults(result) {
-    const categories = [
-      {
-        key: 'start_here',
-        cls: 'green',
-        icon: '✓',
-        title: 'Start here',
-        desc: 'Low-risk, repeatable tasks — good first wins with AI'
-      },
-      {
-        key: 'use_with_care',
-        cls: 'amber',
-        icon: '!',
-        title: 'Use with care',
-        desc: 'AI can help, but your review and judgment are essential'
-      },
-      {
-        key: 'keep_human',
-        cls: 'red',
-        icon: '✕',
-        title: 'Keep human',
-        desc: 'Trust, sensitivity, or quality means AI should stay out — or well in the background'
-      },
-      {
-        key: 'refine_first',
-        cls: 'teal',
-        icon: '→',
-        title: 'Refine the brief first',
-        desc: 'The task needs a clearer prompt or scope before AI can help reliably'
-      }
+    const cats = [
+      { key: 'stars', cls: 'stars-block', icon: '★', title: 'Stars', desc: 'High time-saving · Low error risk — start here' },
+      { key: 'hitl', cls: 'hitl-block', icon: '⟳', title: 'Human in the Loop', desc: 'High time-saving · Errors are risky — use with care' },
+      { key: 'lower', cls: 'lower-block', icon: '↓', title: 'Lower Priority', desc: 'Low time-saving · Low error risk — do later' },
+      { key: 'dnt', cls: 'dnt-block', icon: '✕', title: 'Do Not Touch', desc: 'Low time-saving · High error risk — keep human' }
     ];
 
-    let html = '';
-    categories.forEach(cat => {
-      const items = result[cat.key] || [];
+    let html = `
+      <div class="results-intro">
+        <h2>Your AI Task Map</h2>
+        <p>Based on your ratings. Use this to decide where to start — and what to avoid.</p>
+      </div>
+
+      <div class="quadrant-wrap">
+        <h3>Where your tasks land</h3>
+        <div class="q-outer">
+          <div class="q-y-axis">
+            <div class="q-y-arrows"><span>↑ High</span><span>Low ↓</span></div>
+          </div>
+          <div class="q-main">
+            <div class="q-y-label" style="text-align:center;font-size:0.72rem;font-weight:700;color:var(--text-light);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">Time Saving</div>
+            <div class="q-grid">
+              <div class="q-cell stars">
+                <div class="q-cell-label">★ Stars</div>
+                <div class="q-tags">${sorted.stars.length ? sorted.stars.map(t=>`<span class="q-tag" title="${esc(t.task)}">${esc(shortLabel(t.task))}</span>`).join('') : '<span class="q-empty">None</span>'}</div>
+              </div>
+              <div class="q-cell hitl">
+                <div class="q-cell-label">⟳ Human in the Loop</div>
+                <div class="q-tags">${sorted.hitl.length ? sorted.hitl.map(t=>`<span class="q-tag" title="${esc(t.task)}">${esc(shortLabel(t.task))}</span>`).join('') : '<span class="q-empty">None</span>'}</div>
+              </div>
+              <div class="q-cell lower">
+                <div class="q-cell-label">↓ Lower Priority</div>
+                <div class="q-tags">${sorted.lower.length ? sorted.lower.map(t=>`<span class="q-tag" title="${esc(t.task)}">${esc(shortLabel(t.task))}</span>`).join('') : '<span class="q-empty">None</span>'}</div>
+              </div>
+              <div class="q-cell dnt">
+                <div class="q-cell-label">✕ Do Not Touch</div>
+                <div class="q-tags">${sorted.dnt.length ? sorted.dnt.map(t=>`<span class="q-tag" title="${esc(t.task)}">${esc(shortLabel(t.task))}</span>`).join('') : '<span class="q-empty">None</span>'}</div>
+              </div>
+            </div>
+            <div class="q-x-label" style="margin-top:8px;">Error Risk</div>
+            <div class="q-hi-lo"><span>← Low</span><span>High →</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-family:'DM Serif Text',serif;font-size:1.15rem;margin-bottom:16px;">What to do with each task</h3>`;
+
+    cats.forEach(cat => {
+      const items = sorted[cat.key];
       html += `
         <div class="category-block ${cat.cls}">
-          <div class="category-header">
-            <div class="category-icon">${cat.icon}</div>
+          <div class="cat-header">
+            <div class="cat-icon">${cat.icon}</div>
             <div>
-              <div class="category-title">${cat.title}</div>
-              <div class="category-desc">${cat.desc}</div>
+              <div class="cat-title">${cat.title}</div>
+              <div class="cat-desc">${cat.desc}</div>
             </div>
           </div>
           <ul class="task-result-list">
-            ${items.length === 0
-              ? '<li class="empty-category">None of your tasks fell into this category.</li>'
-              : items.map(item => `
-                <li class="task-result-item">
-                  <strong>${escapeHtml(item.task)}</strong>
-                  <span class="why">${escapeHtml(item.why)}</span>
-                </li>`).join('')
-            }
+            ${items.length
+              ? items.map(t => `<li class="task-result-item"><strong>${esc(t.task)}</strong><span class="why">${t.why}</span></li>`).join('')
+              : '<li class="empty-cat">None of your tasks fell here.</li>'}
           </ul>
         </div>`;
     });
 
-    resultsContent.innerHTML = html;
+    html += `
+      <div class="action-row">
+        <button class="btn-teal" onclick="window.print()">Save as PDF</button>
+        <button class="btn-secondary" onclick="startOver()">Sort different tasks</button>
+      </div>`;
+
+    area.innerHTML = html;
   }
 
   function startOver() {
-    tasks = [];
-    renderTaskList();
-    resultsSection.classList.remove('visible');
-    resultsContent.innerHTML = '';
-    document.querySelector('.task-input-section').style.display = 'block';
-    document.querySelector('.intro-card').style.display = 'block';
-    taskInput.focus();
+    tasks = []; ratings = {};
+    document.getElementById('taskChips').innerHTML = '';
+    document.getElementById('toRateBtn').disabled = true;
+    document.getElementById('step3').classList.remove('active');
+    document.getElementById('step1').classList.add('active');
+    taskInput.value = '';
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
-</script>
 
+  function esc(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+</script>
 </body>
 </html>
