@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Engagement Alerts — AI + Human Connection</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #dd722a;
+            --primary-dark: #b8581c;
+            --black: #0e0906;
+            --background: #fefaec;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --border: #e8e0d0;
+            --shadow: rgba(14, 9, 6, 0.1);
+            --muted: #6b6b6b;
+            --success: #2e7d32;
+            --success-bg: #e8f5e9;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: var(--background);
+            color: var(--black);
+            line-height: 1.6;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+        h1, h2, h3, h4 { font-family: 'DM Serif Text', serif; }
+
+        a { color: var(--primary); }
+
+        /* ─── Header ─── */
+        .header {
+            text-align: center;
+            padding: 36px 30px 28px;
+            background: linear-gradient(135deg, var(--white) 0%, var(--background) 100%);
+            border-radius: 20px;
+            margin-bottom: 28px;
+            box-shadow: 0 10px 30px var(--shadow);
+            position: relative;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--white);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 1rem;
+            color: var(--muted);
+            font-weight: 300;
+            max-width: 560px;
+            margin: 0 auto 16px;
+        }
+
+        /* ─── Status Bar ─── */
+        .status-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: var(--white);
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 20px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .current-slot {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .slot-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #ccc;
+            flex-shrink: 0;
+        }
+
+        .slot-dot.active { background: var(--success); box-shadow: 0 0 0 3px rgba(46,125,50,0.2); }
+
+        .slot-label { font-weight: 600; font-size: 0.95rem; }
+        .slot-desc { font-size: 0.82rem; color: var(--muted); }
+
+        .clock-display {
+            font-family: 'DM Serif Text', serif;
+            font-size: 1.6rem;
+            color: var(--primary);
+        }
+
+        .next-alert {
+            font-size: 0.82rem;
+            color: var(--muted);
+            text-align: right;
+        }
+
+        .next-alert strong { color: var(--black); }
+
+        /* ─── Notification Panel ─── */
+        .notif-panel {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 22px 26px;
+            box-shadow: 0 4px 16px var(--shadow);
+            margin-bottom: 28px;
+        }
+
+        .notif-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .notif-header h3 { font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+
+        .notif-status {
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .notif-status.on { background: var(--success-bg); color: var(--success); }
+        .notif-status.off { background: var(--light-gray); color: var(--muted); }
+
+        .alert-times {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .time-slot-config {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .time-slot-config label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        input[type="time"] {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 0.9rem;
+            background: var(--background);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 7px 10px;
+            color: var(--black);
+            cursor: pointer;
+        }
+
+        input[type="time"]:focus { outline: none; border-color: var(--primary); }
+
+        .notif-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+        /* ─── Toggle Switch ─── */
+        .toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 46px; height: 26px;
+        }
+
+        .toggle input { opacity: 0; width: 0; height: 0; }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #ccc;
+            border-radius: 26px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 20px; height: 20px;
+            left: 3px; top: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        .toggle input:checked + .toggle-slider { background: var(--primary); }
+        .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+        /* ─── Buttons ─── */
+        .btn {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { background: var(--primary-dark); }
+
+        .btn-secondary { background: var(--light-gray); color: var(--black); border: 1px solid var(--border); }
+        .btn-secondary:hover { background: var(--border); }
+
+        .btn-ghost { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+        .btn-ghost:hover { background: var(--primary); color: var(--white); }
+
+        /* ─── Main Layout ─── */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 860px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .header h1 { font-size: 1.9rem; }
+        }
+
+        /* ─── Slot Sections ─── */
+        .slot-section {
+            background: var(--white);
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 16px var(--shadow);
+            overflow: hidden;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .slot-section.active-slot { border-color: var(--primary); }
+
+        .slot-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .slot-head:hover { background: #fffaf5; }
+
+        .slot-head-left { display: flex; align-items: center; gap: 12px; }
+
+        .slot-emoji { font-size: 1.4rem; }
+
+        .slot-info h3 { font-size: 1.05rem; margin-bottom: 2px; }
+
+        .slot-info .slot-time {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        .slot-head-right { display: flex; align-items: center; gap: 10px; }
+
+        .slot-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .badge-active { background: var(--success-bg); color: var(--success); }
+        .badge-upcoming { background: #e3f2fd; color: #1565c0; }
+        .badge-done { background: var(--light-gray); color: var(--muted); }
+
+        .chevron {
+            color: var(--muted);
+            font-size: 0.8rem;
+            transition: transform 0.25s;
+        }
+
+        .slot-section.open .chevron { transform: rotate(180deg); }
+
+        .slot-body {
+            display: none;
+            padding: 0 24px 24px;
+        }
+
+        .slot-section.open .slot-body { display: block; }
+
+        .slot-focus {
+            font-size: 0.88rem;
+            color: var(--muted);
+            background: var(--background);
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 18px;
+            border-left: 3px solid var(--primary);
+        }
+
+        /* ─── Response Starters ─── */
+        .post-type-group { margin-bottom: 20px; }
+
+        .post-type-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            letter-spacing: 0.07em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .post-type-tag {
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+        .starter-card {
+            background: var(--background);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .starter-card:focus-within { border-color: var(--primary); }
+
+        .starter-text {
+            font-size: 0.92rem;
+            line-height: 1.65;
+            color: var(--black);
+            width: 100%;
+            background: transparent;
+            border: none;
+            resize: none;
+            font-family: 'Source Sans Pro', sans-serif;
+            min-height: 80px;
+            outline: none;
+        }
+
+        .starter-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .use-when {
+            font-size: 0.75rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .copy-starter {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            font-family: 'Source Sans Pro', sans-serif;
+            cursor: pointer;
+            color: var(--muted);
+            font-weight: 600;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .copy-starter:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .copy-starter.copied { background: var(--success); color: var(--white); border-color: var(--success); }
+
+        /* ─── Sidebar ─── */
+        .sidebar-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 22px;
+            box-shadow: 0 4px 16px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .sidebar-card h3 {
+            font-size: 1rem;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .today-checklist { list-style: none; }
+
+        .checklist-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.88rem;
+        }
+
+        .checklist-item:last-child { border-bottom: none; }
+
+        .check-box {
+            width: 18px; height: 18px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: var(--white);
+        }
+
+        .check-box.checked { background: var(--success); border-color: var(--success); }
+
+        .checklist-text { flex: 1; line-height: 1.4; }
+        .checklist-text.done { text-decoration: line-through; color: var(--muted); }
+
+        .progress-bar-wrap { margin-top: 14px; }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--light-gray);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            border-radius: 6px;
+            transition: width 0.4s;
+        }
+
+        /* ─── Post type filter ─── */
+        .filter-strip {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+
+        .filter-chip {
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            border: 1.5px solid var(--border);
+            background: var(--white);
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: var(--primary);
+            color: var(--white);
+            border-color: var(--primary);
+        }
+
+        /* ─── All Starters View ─── */
+        .library-section {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 16px var(--shadow);
+            margin-bottom: 24px;
+        }
+
+        .library-section h3 {
+            font-size: 1.1rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .library-section .subtitle {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-bottom: 18px;
+        }
+
+        /* ─── Notification Toast ─── */
+        .alert-banner {
+            display: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: var(--white);
+            border-radius: 16px;
+            padding: 22px 26px;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .alert-banner.show { display: block; animation: slideIn 0.4s ease; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .alert-banner h3 { font-size: 1.1rem; color: var(--white); margin-bottom: 6px; }
+        .alert-banner p { font-size: 0.9rem; opacity: 0.9; }
+
+        .alert-close {
+            position: absolute;
+            top: 14px; right: 16px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: 'Source Sans Pro', sans-serif;
+        }
+
+        .alert-close:hover { background: rgba(255,255,255,0.3); }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed;
+            bottom: 24px; right: 24px;
+            background: var(--black);
+            color: var(--white);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* ─── Nav ─── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            text-decoration: none;
+            margin-bottom: 14px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: var(--primary); }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <a href="index.html" class="back-link">← Back to AI GOLD Toolkit</a>
+
+    <!-- Header -->
+    <div class="header">
+        <div class="header-badge">AI GOLD Toolkit</div>
+        <h1>Daily Engagement Alerts</h1>
+        <p class="subtitle">Time-blocked engagement windows with ready-made response starters — calibrated to your AI + Human Connection focus.</p>
+    </div>
+
+    <!-- Alert Banner (fires when a scheduled time hits) -->
+    <div class="alert-banner" id="alert-banner">
+        <button class="alert-close" onclick="dismissAlert()">Dismiss</button>
+        <h3 id="alert-title">⏰ Time to Engage</h3>
+        <p id="alert-message">Your engagement window has started. Scroll down to see the starters for this session.</p>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="current-slot">
+            <div class="slot-dot" id="slot-dot"></div>
+            <div>
+                <div class="slot-label" id="current-slot-label">Loading…</div>
+                <div class="slot-desc" id="current-slot-desc"></div>
+            </div>
+        </div>
+        <div class="clock-display" id="clock-display">--:--</div>
+        <div class="next-alert">
+            <div id="next-alert-label">Next alert</div>
+            <strong id="next-alert-time">—</strong>
+        </div>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="notif-panel">
+        <div class="notif-header">
+            <h3>🔔 Alert Schedule</h3>
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                <div class="toggle-wrap">
+                    <label class="toggle">
+                        <input type="checkbox" id="notif-toggle" onchange="toggleNotifications()">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span style="font-size:0.85rem;font-weight:600">Browser Notifications</span>
+                </div>
+                <div class="notif-status off" id="notif-status">Off</div>
+            </div>
+        </div>
+
+        <div class="alert-times">
+            <div class="time-slot-config">
+                <label>🌅 Morning</label>
+                <input type="time" id="time-morning" value="08:30">
+            </div>
+            <div class="time-slot-config">
+                <label>☀️ Midday</label>
+                <input type="time" id="time-midday" value="12:30">
+            </div>
+            <div class="time-slot-config">
+                <label>🌤 Afternoon</label>
+                <input type="time" id="time-afternoon" value="15:30">
+            </div>
+            <div class="time-slot-config">
+                <label>🌙 Evening</label>
+                <input type="time" id="time-evening" value="17:30">
+            </div>
+        </div>
+
+        <div class="notif-actions">
+            <button class="btn btn-primary" onclick="saveAlertTimes()">💾 Save Times</button>
+            <button class="btn btn-secondary" onclick="testAlert()">🔔 Test Alert</button>
+        </div>
+    </div>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+
+        <!-- LEFT: Slot Cards + Library -->
+        <div>
+
+            <!-- Morning Slot -->
+            <div class="slot-section" id="slot-morning" data-slot="morning">
+                <div class="slot-head" onclick="toggleSlot('morning')">
+                    <div class="slot-head-left">
+                        <div class="slot-emoji">🌅</div>
+                        <div class="slot-info">
+                            <h3>Morning — Signal Scan</h3>
+                            <div class="slot-time" id="label-morning">8:30 am</div>
+                        </div>
+                    </div>
+                    <div class="slot-head-right">
+                        <span class="slot-badge" id="badge-morning">Upcoming</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </div>
+                <div class="slot-body">
+                    <div class="slot-focus">
+                        <strong>Focus:</strong> Scan for overnight posts that earned early traction. Engage first — your comment reaches more people when a post is still fresh. Look for thought leadership and research that aligns with your lens.
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#e8f5e9;color:#2e7d32">📊 Research / Stats Post</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">Interesting data — I always want to know what's behind the number. [Reference the specific stat] tells us what, but I'm curious about the why: what were the people or teams that bucked this trend actually doing differently?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post cites a study, survey, or stat about AI / work</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">The [X]% figure is striking. What's worth sitting with though is the human story inside the data — I've seen organisations with identical metrics land in very different places depending on whether people felt heard through the change. What's your read on that dimension?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post presents AI adoption or workforce data</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#e3f2fd;color:#1565c0">💡 Thought Leadership Post</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">This reframes something I've been sitting with. [Reference their specific point] — where I'd gently push back is on the assumption that [angle]. Have you seen this play out differently in organisations that already have strong human connection culture baked in?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: someone shares a framework, model, or opinion piece</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">What I find compelling about [their main point] is that it puts the human back in the centre of a conversation that's usually all about the technology. The challenge I keep bumping into is translating this at the team level — what have you found actually lands?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post is an insight-heavy personal essay or observation</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Midday Slot -->
+            <div class="slot-section" id="slot-midday" data-slot="midday">
+                <div class="slot-head" onclick="toggleSlot('midday')">
+                    <div class="slot-head-left">
+                        <div class="slot-emoji">☀️</div>
+                        <div class="slot-info">
+                            <h3>Midday — Engage & Debate</h3>
+                            <div class="slot-time" id="label-midday">12:30 pm</div>
+                        </div>
+                    </div>
+                    <div class="slot-head-right">
+                        <span class="slot-badge" id="badge-midday">Upcoming</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </div>
+                <div class="slot-body">
+                    <div class="slot-focus">
+                        <strong>Focus:</strong> Peak LinkedIn activity window. This is your moment to join the live debate — AI fear posts, hot takes, and polls get maximum visibility mid-day. Bring your calm, grounded perspective to noisy threads.
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#fce4ec;color:#c62828">😨 AI Fear / Doom Post</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">The fear makes sense — the pace of change is genuinely disorienting. What I keep coming back to is that the most irreplaceable thing we have isn't any specific skill; it's judgment. The real question is: what kind of judgment does your work require that AI genuinely can't replicate yet?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post is anxious or pessimistic about AI replacing jobs</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">I notice these conversations almost always frame it as AI vs humans rather than AI + humans. That framing quietly forecloses the most interesting question: what does meaningful work look like when AI handles the repeatable parts? I think that's actually worth getting excited about.</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post frames AI as purely a threat without nuance</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#fff3e0;color:#e65100">🚀 AI Hype / Utopian Post</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">Love the optimism here. The piece I think gets underweighted in these conversations is that AI capability tends to move faster than human readiness to work alongside it — and that gap is where things break down. What's your sense of the cultural and emotional side of this rollout?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post is uncritically enthusiastic about AI solving everything</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">[Their key claim] is genuinely exciting. Where I'd add a layer of complexity is around who benefits and on what timeline — the productivity gains tend to accrue unevenly, especially in the early stages. Are you seeing organisations think deliberately about that distribution?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post celebrates AI productivity without addressing equity</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#f3e5f5;color:#6a1b9a">📊 Poll Post</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">I voted [option] — here's my thinking: [add your specific reasoning]. But honestly the more interesting question for me is what drives people to the opposite view. Would love to hear from those who went the other way — what am I missing?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post includes a LinkedIn poll about AI or work</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Afternoon Slot -->
+            <div class="slot-section" id="slot-afternoon" data-slot="afternoon">
+                <div class="slot-head" onclick="toggleSlot('afternoon')">
+                    <div class="slot-head-left">
+                        <div class="slot-emoji">🌤</div>
+                        <div class="slot-info">
+                            <h3>Afternoon — Connect & Build</h3>
+                            <div class="slot-time" id="label-afternoon">3:30 pm</div>
+                        </div>
+                    </div>
+                    <div class="slot-head-right">
+                        <span class="slot-badge" id="badge-afternoon">Upcoming</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </div>
+                <div class="slot-body">
+                    <div class="slot-focus">
+                        <strong>Focus:</strong> Deepen relationships rather than broadcasting. Respond to your morning comments, engage with career milestones and personal stories, and send connection requests with a personalised note. Quality over volume.
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#e8f5e9;color:#2e7d32">🎉 Career Milestone / Job Announcement</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">Congratulations — and [specific detail from their post, e.g. "the focus on ethical AI at this company"] makes me think this is exactly the kind of environment where your perspective will have real impact. Curious what drew you to this particular role over others you might have had?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: someone announces a new job or promotion relevant to AI / tech</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#fff3e0;color:#e65100">🤝 AI + Ethics / Responsibility Post</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">This is the conversation I think needs far more airtime. What often goes missing in AI ethics discussions is the human systems question — not just what the AI does, but who decides what it optimises for and who's accountable when it goes wrong. What's your take on where responsibility actually sits?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post raises questions about AI accountability, bias, or harm</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">Agreed — and the thing I keep noticing is that the organisations getting this right aren't just adding an ethics committee. They're building it into culture through the humans involved: the questions they ask, the edges they're willing to sit with. [Reference their specific point]. Do you see that shifting in the spaces you work in?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post proposes a responsible AI framework or practice</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#e3f2fd;color:#1565c0">💔 Failure / Vulnerability Post</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">Thank you for sharing this — it takes real courage to be this honest publicly. [Reference their specific insight] is one of those lessons that sounds obvious but only truly lands when you've lived it. What changed in how you approach things now?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: someone shares a failure, lesson, or vulnerable reflection</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Evening Slot -->
+            <div class="slot-section" id="slot-evening" data-slot="evening">
+                <div class="slot-head" onclick="toggleSlot('evening')">
+                    <div class="slot-head-left">
+                        <div class="slot-emoji">🌙</div>
+                        <div class="slot-info">
+                            <h3>Evening — Reflect & Close</h3>
+                            <div class="slot-time" id="label-evening">5:30 pm</div>
+                        </div>
+                    </div>
+                    <div class="slot-head-right">
+                        <span class="slot-badge" id="badge-evening">Upcoming</span>
+                        <span class="chevron">▼</span>
+                    </div>
+                </div>
+                <div class="slot-body">
+                    <div class="slot-focus">
+                        <strong>Focus:</strong> Wrap up the day by engaging with Future of Work and personal story posts — these tend to surface late afternoon. End threads you started this morning. Seed a post of your own if inspiration struck today.
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#e8f5e9;color:#2e7d32">⚙️ Future of Work Post</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">The productivity framing dominates most of these conversations, but I think we're underselling the wellbeing dimension. When AI takes on the cognitive load of routine work, what do people actually do with that recovered capacity? I've seen it go both ways — more creative depth for some, a sense of purposelessness for others. What are you seeing?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post focuses on AI + productivity, hybrid work, or workplace transformation</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">[Their key argument] — this sits with me. I'd add that the leaders I see navigating this well aren't positioning themselves as AI champions or sceptics. They're asking a quieter question: "What does my team need to feel equipped and not diminished by this?" That's a different conversation entirely.</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post is about leadership approach to AI transformation</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#f3e5f5;color:#6a1b9a">📖 Personal Story / Reflection</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">This resonated. The moment you described — [reference their specific moment] — is exactly what gets lost when we talk about transformation in abstract terms. It's always a person, a decision, a conversation. How did that experience shape the way you now talk about AI to people who are still on the fence?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post tells a human story about navigating AI or change</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">What strikes me about [their experience] is that it shows what every framework and model tends to flatten: the emotional reality of working alongside uncertainty. I work with a lot of people in exactly this spot. The ones who come out the other side well usually have someone in their corner who names what they're feeling — did you have that?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post describes personal struggle or uncertainty with AI-driven change</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="post-type-group">
+                        <div class="post-type-label">
+                            <span class="post-type-tag" style="background:#e3f2fd;color:#1565c0">✨ AI + Creativity Post</span>
+                        </div>
+                        <div class="starter-card">
+                            <textarea class="starter-text" spellcheck="true">I find the creativity conversation one of the most alive right now. What I keep noticing is that the best human + AI creative work isn't about the AI doing the creating — it's about the human being freed from the mechanical parts to go deeper on the parts that require taste, judgment, and lived experience. Is that how it felt for you?</textarea>
+                            <div class="starter-footer">
+                                <span class="use-when">Use when: post explores AI's role in creative work, writing, design, or storytelling</span>
+                                <button class="copy-starter" onclick="copyStarter(this)">Copy</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- RIGHT: Sidebar -->
+        <div>
+
+            <!-- Today's Checklist -->
+            <div class="sidebar-card">
+                <h3>✅ Today's Engagement Goals</h3>
+                <ul class="today-checklist" id="daily-checklist">
+                    <li class="checklist-item">
+                        <div class="check-box" onclick="toggleCheck(this)"></div>
+                        <span class="checklist-text">Morning scan — comment on 2 posts</span>
+                    </li>
+                    <li class="checklist-item">
+                        <div class="check-box" onclick="toggleCheck(this)"></div>
+                        <span class="checklist-text">Engage with 1 AI fear or hype post</span>
+                    </li>
+                    <li class="checklist-item">
+                        <div class="check-box" onclick="toggleCheck(this)"></div>
+                        <span class="checklist-text">Send 1 personalised connection request</span>
+                    </li>
+                    <li class="checklist-item">
+                        <div class="check-box" onclick="toggleCheck(this)"></div>
+                        <span class="checklist-text">Reply to any comments on your posts</span>
+                    </li>
+                    <li class="checklist-item">
+                        <div class="check-box" onclick="toggleCheck(this)"></div>
+                        <span class="checklist-text">Afternoon: engage with 1 ethics post</span>
+                    </li>
+                    <li class="checklist-item">
+                        <div class="check-box" onclick="toggleCheck(this)"></div>
+                        <span class="checklist-text">Evening: close open threads</span>
+                    </li>
+                    <li class="checklist-item">
+                        <div class="check-box" onclick="toggleCheck(this)"></div>
+                        <span class="checklist-text">Note 1 insight from today's feed</span>
+                    </li>
+                </ul>
+                <div class="progress-bar-wrap">
+                    <div class="progress-label">
+                        <span>Progress</span>
+                        <span id="progress-text">0 / 7</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Post type quick jump -->
+            <div class="sidebar-card">
+                <h3>🏷 Jump to Post Type</h3>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:6px">
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('Research / Stats', 'morning')">📊 Research / Stats</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('Thought Leadership', 'morning')">💡 Thought Leadership</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('AI Fear', 'midday')">😨 AI Fear / Doom</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('AI Hype', 'midday')">🚀 AI Hype</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('Poll', 'midday')">📊 Poll</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('Career Milestone', 'afternoon')">🎉 Career Milestone</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('Ethics', 'afternoon')">🤝 AI Ethics</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('Vulnerability', 'afternoon')">💔 Vulnerability</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('Future of Work', 'evening')">⚙️ Future of Work</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('Personal Story', 'evening')">📖 Personal Story</button>
+                    <button class="btn btn-secondary" style="justify-content:flex-start;font-size:0.83rem" onclick="jumpTo('Creativity', 'evening')">✨ AI + Creativity</button>
+                </div>
+            </div>
+
+            <!-- Deep analysis link -->
+            <div class="sidebar-card" style="background:linear-gradient(135deg,#fff9f5,#fefaec);border:1.5px solid #ffe0b2">
+                <h3>🔍 Need a Deeper Analysis?</h3>
+                <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px">Paste the full post into the LinkedIn Review Agent for a relevance score, theme breakdown, and a fully personalised comment.</p>
+                <a href="linkedin-review-agent.html" style="display:inline-block;background:var(--primary);color:white;text-decoration:none;padding:9px 18px;border-radius:10px;font-weight:600;font-size:0.88rem">Open Review Agent →</a>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── Data ──────────────────────────────────────────────────────────────────
+const SLOTS = ['morning', 'midday', 'afternoon', 'evening'];
+
+const SLOT_META = {
+    morning:   { label: 'Morning — Signal Scan',    desc: 'Scan for traction posts, warm-up engagement',     emoji: '🌅' },
+    midday:    { label: 'Midday — Engage & Debate',  desc: 'Peak activity — join the live debate',             emoji: '☀️' },
+    afternoon: { label: 'Afternoon — Connect & Build', desc: 'Deepen relationships, respond, reach out',      emoji: '🌤' },
+    evening:   { label: 'Evening — Reflect & Close', desc: 'Wrap threads, seed your own posts',               emoji: '🌙' }
+};
+
+const ALERT_MSG = {
+    morning:   'Your Morning Signal Scan has started. Look for research, stats, and thought leadership posts to engage with first.',
+    midday:    'Midday engagement window open. Jump into the live debate — AI fear, hype, and polls are prime right now.',
+    afternoon: 'Time to build connections. Respond to morning threads, engage milestones, and send a personalised request.',
+    evening:   'Evening window. Close your open threads and engage with Future of Work and personal story posts.'
+};
+
+// ─── State ────────────────────────────────────────────────────────────────
+let alertTimesState = { morning: '08:30', midday: '12:30', afternoon: '15:30', evening: '17:30' };
+let firedToday = {};
+let tickerInterval;
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    loadSavedTimes();
+    loadChecklist();
+    startTicker();
+    updateStatus();
+
+    // Auto-open the active slot
+    const active = getActiveSlot();
+    if (active) openSlot(active);
+    else openSlot('morning');
+});
+
+// ─── Clock & Status ───────────────────────────────────────────────────────
+function startTicker() {
+    tick();
+    tickerInterval = setInterval(tick, 30000); // every 30s
+}
+
+function tick() {
+    const now = new Date();
+    document.getElementById('clock-display').textContent =
+        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    updateStatus();
+    checkAlerts(now);
+}
+
+function getTimeMinutes(timeStr) {
+    const [h, m] = timeStr.split(':').map(Number);
+    return h * 60 + m;
+}
+
+function nowMinutes() {
+    const n = new Date();
+    return n.getHours() * 60 + n.getMinutes();
+}
+
+function getActiveSlot() {
+    const nm = nowMinutes();
+    const times = SLOTS.map(s => ({ slot: s, min: getTimeMinutes(alertTimesState[s]) }));
+    times.sort((a, b) => a.min - b.min);
+
+    let active = null;
+    for (let i = 0; i < times.length; i++) {
+        if (nm >= times[i].min) {
+            const end = times[i + 1] ? times[i + 1].min : times[i].min + 120;
+            if (nm < end) active = times[i].slot;
+        }
+    }
+    return active;
+}
+
+function updateStatus() {
+    const active = getActiveSlot();
+    const dot = document.getElementById('slot-dot');
+    const label = document.getElementById('current-slot-label');
+    const desc = document.getElementById('current-slot-desc');
+    const nextLabel = document.getElementById('next-alert-label');
+    const nextTime = document.getElementById('next-alert-time');
+
+    // Update slot badges
+    const nm = nowMinutes();
+    SLOTS.forEach(s => {
+        const badge = document.getElementById('badge-' + s);
+        const section = document.getElementById('slot-' + s);
+        const slotMin = getTimeMinutes(alertTimesState[s]);
+        if (s === active) {
+            badge.textContent = 'Active Now';
+            badge.className = 'slot-badge badge-active';
+            section.classList.add('active-slot');
+        } else if (slotMin > nm) {
+            badge.textContent = 'Upcoming';
+            badge.className = 'slot-badge badge-upcoming';
+            section.classList.remove('active-slot');
+        } else {
+            badge.textContent = 'Done';
+            badge.className = 'slot-badge badge-done';
+            section.classList.remove('active-slot');
+        }
+    });
+
+    if (active) {
+        dot.classList.add('active');
+        label.textContent = SLOT_META[active].label;
+        desc.textContent = SLOT_META[active].desc;
+    } else {
+        dot.classList.remove('active');
+        label.textContent = 'Between sessions';
+        desc.textContent = 'Check back at the next alert window';
+    }
+
+    // Next alert
+    const upcoming = SLOTS
+        .map(s => ({ slot: s, min: getTimeMinutes(alertTimesState[s]) }))
+        .filter(x => x.min > nm)
+        .sort((a, b) => a.min - b.min);
+
+    if (upcoming.length > 0) {
+        const next = upcoming[0];
+        const diff = next.min - nm;
+        const h = Math.floor(diff / 60);
+        const m = diff % 60;
+        nextLabel.textContent = `Next alert (${SLOT_META[next.slot].emoji} ${next.slot})`;
+        nextTime.textContent = h > 0 ? `in ${h}h ${m}m` : `in ${m} min`;
+    } else {
+        nextLabel.textContent = 'Next alert';
+        nextTime.textContent = 'Tomorrow morning';
+    }
+}
+
+// ─── Alert Checks ─────────────────────────────────────────────────────────
+function checkAlerts(now) {
+    const todayKey = now.toDateString();
+    if (!firedToday[todayKey]) firedToday = { [todayKey]: {} };
+
+    const nm = now.getHours() * 60 + now.getMinutes();
+
+    SLOTS.forEach(slot => {
+        const slotMin = getTimeMinutes(alertTimesState[slot]);
+        const withinWindow = nm >= slotMin && nm <= slotMin + 2;
+
+        if (withinWindow && !firedToday[todayKey][slot]) {
+            firedToday[todayKey][slot] = true;
+            fireAlert(slot);
+        }
+    });
+}
+
+function fireAlert(slot) {
+    const meta = SLOT_META[slot];
+
+    // On-page banner
+    const banner = document.getElementById('alert-banner');
+    document.getElementById('alert-title').textContent = `${meta.emoji} ${meta.label}`;
+    document.getElementById('alert-message').textContent = ALERT_MSG[slot];
+    banner.classList.add('show');
+    openSlot(slot);
+    document.getElementById('slot-' + slot).scrollIntoView({ behavior: 'smooth' });
+
+    // Browser notification
+    if (Notification.permission === 'granted') {
+        new Notification(`AI Gold — ${meta.label}`, {
+            body: ALERT_MSG[slot],
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🤖</text></svg>'
+        });
+    }
+}
+
+function dismissAlert() {
+    document.getElementById('alert-banner').classList.remove('show');
+}
+
+// ─── Notification Toggle ──────────────────────────────────────────────────
+async function toggleNotifications() {
+    const on = document.getElementById('notif-toggle').checked;
+    if (on) {
+        if (Notification.permission === 'default') {
+            const perm = await Notification.requestPermission();
+            if (perm !== 'granted') {
+                document.getElementById('notif-toggle').checked = false;
+                showToast('Browser notifications were denied. Check your browser settings.');
+                updateNotifStatus(false);
+                return;
+            }
+        }
+        if (Notification.permission === 'denied') {
+            document.getElementById('notif-toggle').checked = false;
+            showToast('Notifications are blocked. Please enable them in your browser settings for this page.');
+            updateNotifStatus(false);
+            return;
+        }
+    }
+    updateNotifStatus(on);
+    localStorage.setItem('ag_notif_on', on ? '1' : '0');
+    showToast(on ? 'Browser notifications enabled' : 'Browser notifications turned off');
+}
+
+function updateNotifStatus(on) {
+    const el = document.getElementById('notif-status');
+    el.textContent = on ? 'On' : 'Off';
+    el.className = 'notif-status ' + (on ? 'on' : 'off');
+}
+
+// ─── Save / Load Times ────────────────────────────────────────────────────
+function saveAlertTimes() {
+    SLOTS.forEach(s => {
+        alertTimesState[s] = document.getElementById('time-' + s).value;
+        document.getElementById('label-' + s).textContent =
+            formatTime(alertTimesState[s]);
+    });
+    localStorage.setItem('ag_alert_times', JSON.stringify(alertTimesState));
+    updateStatus();
+    showToast('Alert times saved');
+}
+
+function loadSavedTimes() {
+    const saved = localStorage.getItem('ag_alert_times');
+    if (saved) {
+        try {
+            alertTimesState = JSON.parse(saved);
+            SLOTS.forEach(s => {
+                if (alertTimesState[s]) {
+                    document.getElementById('time-' + s).value = alertTimesState[s];
+                    document.getElementById('label-' + s).textContent = formatTime(alertTimesState[s]);
+                }
+            });
+        } catch (e) {}
+    } else {
+        SLOTS.forEach(s => {
+            document.getElementById('label-' + s).textContent = formatTime(alertTimesState[s]);
+        });
+    }
+
+    const notifOn = localStorage.getItem('ag_notif_on') === '1';
+    document.getElementById('notif-toggle').checked = notifOn;
+    updateNotifStatus(notifOn);
+}
+
+function formatTime(t) {
+    const [h, m] = t.split(':').map(Number);
+    const ampm = h >= 12 ? 'pm' : 'am';
+    const h12 = h % 12 || 12;
+    return `${h12}:${String(m).padStart(2, '0')} ${ampm}`;
+}
+
+function testAlert() {
+    const active = getActiveSlot() || 'morning';
+    fireAlert(active);
+    showToast('Test alert fired');
+}
+
+// ─── Slot Accordion ───────────────────────────────────────────────────────
+function toggleSlot(slot) {
+    const section = document.getElementById('slot-' + slot);
+    section.classList.toggle('open');
+}
+
+function openSlot(slot) {
+    document.getElementById('slot-' + slot).classList.add('open');
+}
+
+// ─── Jump to Post Type ────────────────────────────────────────────────────
+function jumpTo(type, slot) {
+    openSlot(slot);
+    const section = document.getElementById('slot-' + slot);
+    section.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ─── Copy Starters ────────────────────────────────────────────────────────
+function copyStarter(btn) {
+    const textarea = btn.closest('.starter-card').querySelector('.starter-text');
+    const text = textarea.value;
+    navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+// ─── Checklist ────────────────────────────────────────────────────────────
+function toggleCheck(box) {
+    box.classList.toggle('checked');
+    box.textContent = box.classList.contains('checked') ? '✓' : '';
+    const textEl = box.nextElementSibling;
+    textEl.classList.toggle('done', box.classList.contains('checked'));
+    updateProgress();
+    saveChecklist();
+}
+
+function updateProgress() {
+    const total = document.querySelectorAll('.check-box').length;
+    const done = document.querySelectorAll('.check-box.checked').length;
+    document.getElementById('progress-text').textContent = `${done} / ${total}`;
+    document.getElementById('progress-fill').style.width = `${(done / total) * 100}%`;
+}
+
+function saveChecklist() {
+    const states = [...document.querySelectorAll('.check-box')].map(b => b.classList.contains('checked'));
+    const todayKey = new Date().toDateString();
+    localStorage.setItem('ag_checklist_' + todayKey, JSON.stringify(states));
+}
+
+function loadChecklist() {
+    const todayKey = new Date().toDateString();
+    const saved = localStorage.getItem('ag_checklist_' + todayKey);
+    if (!saved) return;
+    try {
+        const states = JSON.parse(saved);
+        const boxes = document.querySelectorAll('.check-box');
+        states.forEach((checked, i) => {
+            if (checked && boxes[i]) {
+                boxes[i].classList.add('checked');
+                boxes[i].textContent = '✓';
+                boxes[i].nextElementSibling.classList.add('done');
+            }
+        });
+        updateProgress();
+    } catch (e) {}
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+
+</body>
+</html>
