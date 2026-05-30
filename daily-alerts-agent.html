@@ -2,8 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Daily Engagement Alerts — AI + Human Connection</title>
+
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#dd722a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="AI Alerts">
+    <link rel="apple-touch-icon" href="icon.svg">
+
     <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -609,11 +618,136 @@
         .back-link:hover { color: var(--primary); }
 
         hr { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+
+        /* ─── Install Banner ─── */
+        .install-banner {
+            display: none;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .install-banner.show { display: flex; }
+
+        .install-banner .install-text { flex: 1; font-size: 0.9rem; line-height: 1.4; }
+        .install-banner .install-text strong { display: block; font-size: 1rem; margin-bottom: 3px; }
+
+        .install-btn {
+            background: white;
+            color: var(--primary-dark);
+            border: none;
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Source Sans Pro', sans-serif;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .install-dismiss {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
+            flex-shrink: 0;
+        }
+
+        /* ─── Mobile bottom nav ─── */
+        .mobile-slot-nav {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: var(--white);
+            border-top: 1px solid var(--border);
+            padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+            z-index: 50;
+            box-shadow: 0 -4px 12px var(--shadow);
+        }
+
+        .mobile-slot-nav .nav-tabs {
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .mobile-slot-nav .tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            background: none;
+            border: none;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: color 0.2s;
+            min-width: 60px;
+        }
+
+        .mobile-slot-nav .tab .tab-emoji { font-size: 1.3rem; }
+        .mobile-slot-nav .tab.active { color: var(--primary); }
+
+        /* ─── Mobile overrides ─── */
+        @media (max-width: 600px) {
+            .container { padding: 12px 14px 80px; }
+
+            .header { padding: 24px 16px 20px; border-radius: 14px; }
+            .header h1 { font-size: 1.6rem; }
+            .header .subtitle { font-size: 0.88rem; }
+
+            .status-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                padding: 12px 16px;
+            }
+
+            .clock-display { font-size: 2rem; }
+            .next-alert { text-align: left; }
+
+            .notif-panel { padding: 16px; }
+            .alert-times { flex-direction: column; gap: 10px; }
+            .time-slot-config { flex-direction: row; align-items: center; gap: 10px; }
+            .time-slot-config label { min-width: 100px; margin-bottom: 0; }
+
+            .slot-head { padding: 14px 16px; }
+            .slot-body { padding: 0 16px 16px; }
+            .slot-emoji { font-size: 1.2rem; }
+            .slot-info h3 { font-size: 0.97rem; }
+
+            .starter-text { font-size: 0.88rem; min-height: 90px; }
+            .copy-starter { padding: 7px 14px; font-size: 0.8rem; }
+
+            .sidebar-card { padding: 16px; }
+
+            .mobile-slot-nav { display: block; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
+
+    <!-- Install Banner -->
+    <div class="install-banner" id="install-banner">
+        <div class="install-text">
+            <strong>📲 Add to your Home Screen</strong>
+            Get alerts like an app — works on iPhone &amp; Android
+        </div>
+        <button class="install-btn" id="install-btn" onclick="installPWA()">Add App</button>
+        <button class="install-dismiss" onclick="dismissInstall()">✕</button>
+    </div>
 
     <a href="index.html" class="back-link">← Back to AI GOLD Toolkit</a>
 
@@ -1057,6 +1191,24 @@
 
 </div>
 
+<!-- Mobile Bottom Nav -->
+<nav class="mobile-slot-nav">
+    <div class="nav-tabs">
+        <button class="tab" onclick="mobileJump('morning')" id="mob-morning">
+            <span class="tab-emoji">🌅</span>Morning
+        </button>
+        <button class="tab" onclick="mobileJump('midday')" id="mob-midday">
+            <span class="tab-emoji">☀️</span>Midday
+        </button>
+        <button class="tab" onclick="mobileJump('afternoon')" id="mob-afternoon">
+            <span class="tab-emoji">🌤</span>Afternoon
+        </button>
+        <button class="tab" onclick="mobileJump('evening')" id="mob-evening">
+            <span class="tab-emoji">🌙</span>Evening
+        </button>
+    </div>
+</nav>
+
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1389,6 +1541,70 @@ function showToast(msg) {
     t.textContent = msg;
     t.classList.add('show');
     setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── Mobile Bottom Nav ────────────────────────────────────────────────────
+function mobileJump(slot) {
+    openSlot(slot);
+    document.getElementById('slot-' + slot).scrollIntoView({ behavior: 'smooth' });
+    document.querySelectorAll('.mobile-slot-nav .tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('mob-' + slot).classList.add('active');
+}
+
+// Highlight active tab as user scrolls
+window.addEventListener('scroll', () => {
+    SLOTS.forEach(s => {
+        const el = document.getElementById('slot-' + s);
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= 150 && rect.bottom > 150) {
+            document.querySelectorAll('.mobile-slot-nav .tab').forEach(t => t.classList.remove('active'));
+            const tab = document.getElementById('mob-' + s);
+            if (tab) tab.classList.add('active');
+        }
+    });
+}, { passive: true });
+
+// ─── PWA Install ─────────────────────────────────────────────────────────
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!localStorage.getItem('ag_install_dismissed')) {
+        document.getElementById('install-banner').classList.add('show');
+    }
+});
+
+function installPWA() {
+    if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(result => {
+            if (result.outcome === 'accepted') {
+                document.getElementById('install-banner').classList.remove('show');
+                showToast('App installed! Find it on your home screen.');
+            }
+            deferredPrompt = null;
+        });
+    } else {
+        // iOS instructions
+        showToast('On iPhone: tap the Share button then "Add to Home Screen"');
+    }
+}
+
+function dismissInstall() {
+    document.getElementById('install-banner').classList.remove('show');
+    localStorage.setItem('ag_install_dismissed', '1');
+}
+
+window.addEventListener('appinstalled', () => {
+    document.getElementById('install-banner').classList.remove('show');
+    showToast('App installed successfully!');
+});
+
+// ─── Service Worker ───────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 </script>
 
