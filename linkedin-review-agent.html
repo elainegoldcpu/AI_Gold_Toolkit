@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinkedIn AI + Human Connection Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #dd722a;
+            --primary-dark: #b8581c;
+            --black: #0e0906;
+            --background: #fefaec;
+            --white: #ffffff;
+            --light-gray: #f5f5f5;
+            --border: #e8e0d0;
+            --shadow: rgba(14, 9, 6, 0.1);
+            --success: #2e7d32;
+            --success-bg: #e8f5e9;
+            --warn: #e65100;
+            --warn-bg: #fff3e0;
+            --muted: #6b6b6b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: var(--background);
+            color: var(--black);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+        h1, h2, h3, h4 { font-family: 'DM Serif Text', serif; color: var(--black); }
+
+        /* ─── Header ─── */
+        .header {
+            text-align: center;
+            padding: 40px 30px 32px;
+            background: linear-gradient(135deg, var(--white) 0%, var(--background) 100%);
+            border-radius: 20px;
+            margin-bottom: 32px;
+            box-shadow: 0 10px 30px var(--shadow);
+            position: relative;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: var(--primary);
+            color: var(--white);
+            font-size: 0.72rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+        }
+
+        .header h1 {
+            font-size: 2.6rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 1.05rem;
+            color: var(--muted);
+            font-weight: 300;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--light-gray);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-family: 'Source Sans Pro', sans-serif;
+            cursor: pointer;
+            color: var(--black);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .settings-btn:hover { background: var(--border); }
+
+        .api-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            margin-top: 12px;
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: var(--light-gray);
+            color: var(--muted);
+        }
+
+        .api-status.connected { background: var(--success-bg); color: var(--success); }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #ccc;
+            flex-shrink: 0;
+        }
+
+        .status-dot.connected { background: var(--success); }
+
+        /* ─── Layout ─── */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        @media (max-width: 860px) {
+            .main-layout { grid-template-columns: 1fr; }
+            .header h1 { font-size: 2rem; }
+        }
+
+        /* ─── Cards ─── */
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 16px var(--shadow);
+            margin-bottom: 20px;
+        }
+
+        .card h3 {
+            font-size: 1.15rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card h3 span.icon { font-size: 1.1rem; }
+
+        /* ─── Input Area ─── */
+        .input-group { margin-bottom: 16px; }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--black);
+            letter-spacing: 0.03em;
+        }
+
+        textarea, input[type="text"], input[type="password"], select {
+            width: 100%;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 0.95rem;
+            color: var(--black);
+            background: var(--background);
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            transition: border-color 0.2s;
+            resize: vertical;
+        }
+
+        textarea:focus, input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        textarea { min-height: 160px; }
+
+        .char-count {
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 600px) { .input-row { grid-template-columns: 1fr; } }
+
+        /* ─── Buttons ─── */
+        .btn {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 22px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+            width: 100%;
+            justify-content: center;
+            font-size: 1rem;
+            padding: 14px;
+        }
+
+        .btn-primary:hover:not(:disabled) { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-primary:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            background: var(--light-gray);
+            color: var(--black);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover { background: var(--border); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--primary);
+            border: 1.5px solid var(--primary);
+        }
+
+        .btn-ghost:hover { background: var(--primary); color: var(--white); }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        /* ─── Loading ─── */
+        .loading-overlay {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            padding: 32px;
+            text-align: center;
+        }
+
+        .loading-overlay.active { display: flex; }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text { color: var(--muted); font-size: 0.9rem; }
+
+        /* ─── Analysis Output ─── */
+        #analysis-output { display: none; }
+
+        .score-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .score-circle {
+            width: 72px; height: 72px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-family: 'DM Serif Text', serif;
+        }
+
+        .score-circle .score-num { font-size: 1.6rem; line-height: 1; }
+        .score-circle .score-label { font-size: 0.65rem; font-family: 'Source Sans Pro', sans-serif; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; }
+
+        .score-high { background: var(--success-bg); color: var(--success); }
+        .score-mid { background: #fff8e1; color: #f57f17; }
+        .score-low { background: #fce4ec; color: #c62828; }
+
+        .score-summary { flex: 1; }
+        .score-summary .action-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 6px;
+        }
+
+        .action-comment { background: #e3f2fd; color: #1565c0; }
+        .action-share { background: #e8f5e9; color: #2e7d32; }
+        .action-connect { background: #f3e5f5; color: #6a1b9a; }
+        .action-save { background: #fff3e0; color: #e65100; }
+        .action-skip { background: #f5f5f5; color: #616161; }
+
+        .analysis-section { margin-bottom: 18px; }
+
+        .analysis-section h4 {
+            font-size: 0.78rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-family: 'Source Sans Pro', sans-serif;
+            font-weight: 600;
+        }
+
+        .analysis-section p { font-size: 0.95rem; color: var(--black); }
+
+        .theme-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+
+        .theme-tag {
+            background: #fff3e0;
+            color: var(--primary-dark);
+            border: 1px solid #ffe0b2;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .comment-box {
+            background: var(--background);
+            border: 1.5px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 0.93rem;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            font-family: 'Source Sans Pro', sans-serif;
+            cursor: pointer;
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover { background: var(--primary); color: var(--white); border-color: var(--primary); }
+        .copy-btn.copied { background: var(--success); color: var(--white); border-color: var(--success); }
+
+        /* ─── Sidebar History ─── */
+        .history-empty {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.88rem;
+            padding: 24px 0;
+        }
+
+        .history-item {
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--background);
+        }
+
+        .history-item:hover { border-color: var(--primary); background: #fff9f5; }
+
+        .history-item .h-score {
+            font-size: 0.78rem;
+            font-weight: 600;
+            float: right;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .history-item .h-preview {
+            font-size: 0.83rem;
+            color: var(--black);
+            margin-top: 2px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .history-item .h-meta {
+            font-size: 0.75rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .history-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .history-actions .btn {
+            font-size: 0.8rem;
+            padding: 7px 12px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        /* ─── Modal ─── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(14, 9, 6, 0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 36px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(14, 9, 6, 0.2);
+        }
+
+        .modal h2 { margin-bottom: 8px; }
+
+        .modal p { font-size: 0.9rem; color: var(--muted); margin-bottom: 24px; }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            margin-top: 24px;
+            justify-content: flex-end;
+        }
+
+        /* ─── Tips Section ─── */
+        .tips-list { list-style: none; }
+
+        .tips-list li {
+            font-size: 0.88rem;
+            color: var(--black);
+            padding: 6px 0 6px 20px;
+            position: relative;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tips-list li:last-child { border-bottom: none; }
+
+        .tips-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--black);
+            color: var(--white);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s;
+            z-index: 200;
+            pointer-events: none;
+        }
+
+        .toast.show { opacity: 1; transform: translateY(0); }
+
+        /* ─── Focus Themes Info ─── */
+        .focus-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .focus-chip {
+            font-size: 0.78rem;
+            background: #fff3e0;
+            color: var(--primary-dark);
+            border: 1px solid #ffe0b2;
+            border-radius: 8px;
+            padding: 6px 10px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        /* ─── Nav back ─── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--muted);
+            font-size: 0.85rem;
+            text-decoration: none;
+            margin-bottom: 16px;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover { color: var(--primary); }
+
+        hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <a href="index.html" class="back-link">← Back to AI GOLD Toolkit</a>
+
+    <!-- Header -->
+    <div class="header">
+        <button class="settings-btn" onclick="openSettings()">⚙ API Settings</button>
+        <div class="header-badge">AI GOLD Toolkit</div>
+        <h1>LinkedIn Review Agent</h1>
+        <p class="subtitle">Analyse LinkedIn posts through your AI + Human Connection lens — get relevance scores, theme breakdowns, and ready-to-send comments.</p>
+        <div class="api-status" id="api-status">
+            <div class="status-dot" id="status-dot"></div>
+            <span id="status-text">No API key configured</span>
+        </div>
+    </div>
+
+    <div class="main-layout">
+
+        <!-- ─── LEFT COLUMN ─── -->
+        <div>
+
+            <!-- Input Card -->
+            <div class="card">
+                <h3><span class="icon">📋</span> Paste a LinkedIn Post</h3>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label for="author-name">Author Name <span style="font-weight:300;color:var(--muted)">(optional)</span></label>
+                        <input type="text" id="author-name" placeholder="e.g. Sarah Chen">
+                    </div>
+                    <div class="input-group">
+                        <label for="author-role">Author Role / Company <span style="font-weight:300;color:var(--muted)">(optional)</span></label>
+                        <input type="text" id="author-role" placeholder="e.g. VP of Engineering, Google">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="post-content">Post Content</label>
+                    <textarea id="post-content" placeholder="Paste the full LinkedIn post text here…" oninput="updateCharCount()"></textarea>
+                    <div class="char-count"><span id="char-count">0</span> characters</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="extra-context">Additional Context <span style="font-weight:300;color:var(--muted)">(optional — e.g. post type, your current priorities)</span></label>
+                    <input type="text" id="extra-context" placeholder="e.g. Post includes a poll about AI replacing jobs">
+                </div>
+
+                <button class="btn btn-primary" id="analyze-btn" onclick="analyzePost()">
+                    🔍 Analyse Post
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div class="loading-overlay" id="loading-overlay">
+                <div class="spinner"></div>
+                <div class="loading-text">Reviewing post through your AI + Human Connection lens…</div>
+            </div>
+
+            <!-- Analysis Output -->
+            <div class="card" id="analysis-output">
+                <h3><span class="icon">📊</span> Post Analysis</h3>
+
+                <!-- Score Row -->
+                <div class="score-row">
+                    <div class="score-circle" id="score-circle">
+                        <span class="score-num" id="score-num">—</span>
+                        <span class="score-label">/ 10</span>
+                    </div>
+                    <div class="score-summary">
+                        <div class="action-tag" id="action-tag">—</div>
+                        <div id="score-headline" style="font-size:0.95rem;color:var(--black)"></div>
+                    </div>
+                </div>
+
+                <!-- Themes -->
+                <div class="analysis-section">
+                    <h4>AI + Human Connection Themes Detected</h4>
+                    <div class="theme-tags" id="theme-tags"></div>
+                </div>
+
+                <!-- Why it matters -->
+                <div class="analysis-section">
+                    <h4>Why This Matters For Your Focus</h4>
+                    <p id="why-matters"></p>
+                </div>
+
+                <!-- Author perspective -->
+                <div class="analysis-section">
+                    <h4>Author's Perspective on AI & Humans</h4>
+                    <p id="author-perspective"></p>
+                </div>
+
+                <!-- Engagement strategy -->
+                <div class="analysis-section">
+                    <h4>Engagement Strategy</h4>
+                    <p id="engagement-strategy"></p>
+                </div>
+
+                <!-- Suggested comment -->
+                <div class="analysis-section">
+                    <h4>Suggested Comment</h4>
+                    <div class="comment-box" id="comment-box">
+                        <button class="copy-btn" onclick="copyComment()">Copy</button>
+                        <div id="suggested-comment"></div>
+                    </div>
+                </div>
+
+                <!-- Connection opportunity -->
+                <div class="analysis-section" id="connection-section">
+                    <h4>Connection Opportunity</h4>
+                    <p id="connection-opportunity"></p>
+                </div>
+
+                <hr>
+                <div class="btn-row">
+                    <button class="btn btn-secondary" onclick="clearAnalysis()">✕ Clear</button>
+                    <button class="btn btn-ghost" onclick="exportReview()">↓ Export Review</button>
+                    <button class="btn btn-ghost" onclick="copyAllAnalysis()">⎘ Copy All</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ─── RIGHT COLUMN ─── -->
+        <div>
+
+            <!-- Focus Themes Reference -->
+            <div class="card">
+                <h3><span class="icon">🎯</span> Your Focus Themes</h3>
+                <p style="font-size:0.85rem;color:var(--muted);margin-bottom:14px">Posts are scored on alignment with these themes:</p>
+                <div class="focus-grid">
+                    <div class="focus-chip">Human-Centred AI</div>
+                    <div class="focus-chip">AI Ethics</div>
+                    <div class="focus-chip">Augmentation</div>
+                    <div class="focus-chip">Emotional Intelligence</div>
+                    <div class="focus-chip">AI Leadership</div>
+                    <div class="focus-chip">Future of Work</div>
+                    <div class="focus-chip">AI Literacy</div>
+                    <div class="focus-chip">Human Oversight</div>
+                    <div class="focus-chip">AI & Creativity</div>
+                    <div class="focus-chip">Trust & Safety</div>
+                </div>
+            </div>
+
+            <!-- Session History -->
+            <div class="card">
+                <h3><span class="icon">🗂</span> Session History</h3>
+                <div id="history-list">
+                    <div class="history-empty">No posts reviewed yet.<br>Paste a post to get started.</div>
+                </div>
+                <div class="history-actions" id="history-actions" style="display:none">
+                    <button class="btn btn-secondary" onclick="clearHistory()">Clear History</button>
+                    <button class="btn btn-ghost" onclick="exportHistory()">Export All</button>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="card">
+                <h3><span class="icon">💡</span> Tips for Best Results</h3>
+                <ul class="tips-list">
+                    <li>Paste the full post including any hashtags</li>
+                    <li>Add the author's role for richer context</li>
+                    <li>High-scoring posts (7+) are prime engagement opportunities</li>
+                    <li>Use the suggested comment as a starting point — personalise it</li>
+                    <li>Export your session to track patterns over time</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<!-- ─── Settings Modal ─── -->
+<div class="modal-overlay" id="settings-modal">
+    <div class="modal">
+        <h2>API Settings</h2>
+        <p>Your Anthropic API key is stored only in your browser's local storage and is never sent anywhere except the Anthropic API.</p>
+
+        <div class="input-group">
+            <label for="api-key-input">Anthropic API Key</label>
+            <input type="password" id="api-key-input" placeholder="sk-ant-…">
+        </div>
+
+        <div class="input-group" style="margin-top:16px">
+            <label for="model-select">Model</label>
+            <select id="model-select">
+                <option value="claude-sonnet-4-6">Claude Sonnet 4.6 (Recommended — most thorough)</option>
+                <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Fastest — great for bulk review)</option>
+            </select>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+            <button class="btn btn-primary" style="width:auto" onclick="saveSettings()">Save Settings</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────
+let sessionHistory = [];
+let currentAnalysis = null;
+
+// ─── Init ────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    updateApiStatus();
+    const savedModel = localStorage.getItem('ag_model');
+    if (savedModel) document.getElementById('model-select').value = savedModel;
+});
+
+// ─── Char count ──────────────────────────────────────────────
+function updateCharCount() {
+    const len = document.getElementById('post-content').value.length;
+    document.getElementById('char-count').textContent = len.toLocaleString();
+}
+
+// ─── Settings ────────────────────────────────────────────────
+function openSettings() {
+    const key = localStorage.getItem('ag_api_key') || '';
+    document.getElementById('api-key-input').value = key;
+    const model = localStorage.getItem('ag_model') || 'claude-sonnet-4-6';
+    document.getElementById('model-select').value = model;
+    document.getElementById('settings-modal').classList.add('active');
+}
+
+function closeSettings() {
+    document.getElementById('settings-modal').classList.remove('active');
+}
+
+function saveSettings() {
+    const key = document.getElementById('api-key-input').value.trim();
+    const model = document.getElementById('model-select').value;
+    if (key) localStorage.setItem('ag_api_key', key);
+    else localStorage.removeItem('ag_api_key');
+    localStorage.setItem('ag_model', model);
+    closeSettings();
+    updateApiStatus();
+    showToast('Settings saved');
+}
+
+function updateApiStatus() {
+    const key = localStorage.getItem('ag_api_key');
+    const dot = document.getElementById('status-dot');
+    const text = document.getElementById('status-text');
+    const status = document.getElementById('api-status');
+    if (key && key.startsWith('sk-ant')) {
+        dot.className = 'status-dot connected';
+        text.textContent = 'API key configured';
+        status.className = 'api-status connected';
+    } else {
+        dot.className = 'status-dot';
+        text.textContent = 'No API key configured — click ⚙ API Settings';
+        status.className = 'api-status';
+    }
+}
+
+// ─── Main Analysis ────────────────────────────────────────────
+async function analyzePost() {
+    const postText = document.getElementById('post-content').value.trim();
+    if (!postText) { showToast('Please paste a LinkedIn post first'); return; }
+
+    const apiKey = localStorage.getItem('ag_api_key');
+    if (!apiKey) { openSettings(); showToast('Please add your API key first'); return; }
+
+    const model = localStorage.getItem('ag_model') || 'claude-sonnet-4-6';
+    const authorName = document.getElementById('author-name').value.trim();
+    const authorRole = document.getElementById('author-role').value.trim();
+    const extraContext = document.getElementById('extra-context').value.trim();
+
+    // Show loading
+    document.getElementById('loading-overlay').classList.add('active');
+    document.getElementById('analysis-output').style.display = 'none';
+    document.getElementById('analyze-btn').disabled = true;
+
+    const systemPrompt = `You are an expert LinkedIn content analyst working for Elaine Gold, an AI consultant and founder of AI Gold Consulting. Elaine's core professional focus is the intersection of AI and human connection — specifically how AI can augment, empower, and deepen human relationships rather than replace them.
+
+Her key themes of interest include:
+- Human-centred AI design and ethics
+- AI augmentation vs replacement of humans
+- Emotional intelligence and empathy in AI systems
+- AI's impact on leadership and organisational culture
+- Future of work: human + AI collaboration
+- AI literacy and responsible adoption
+- Trust, safety, and transparency in AI
+- AI and creativity / storytelling
+- The human element in digital transformation
+- Founders and executives navigating AI strategy
+
+When reviewing a LinkedIn post, return ONLY a valid JSON object with exactly this structure (no markdown, no explanation):
+{
+  "relevanceScore": <integer 1-10>,
+  "scoreSummary": "<one sentence on why this score>",
+  "themes": ["<theme1>", "<theme2>", "<theme3>"],
+  "recommendedAction": "<one of: Comment, Share, Connect, Save for Later, Skip>",
+  "actionRationale": "<1-2 sentences on why this action>",
+  "whyItMatters": "<2-3 sentences on why this post matters to Elaine's AI + Human Connection focus>",
+  "authorPerspective": "<2-3 sentences analysing the author's stance on AI and humans>",
+  "engagementStrategy": "<2-3 sentences on how Elaine should engage to add value and grow her presence>",
+  "suggestedComment": "<a thoughtful, value-adding LinkedIn comment written as Elaine — 3-5 sentences, conversational but insightful, no emojis unless very natural, ends with a question to spark dialogue>",
+  "connectionOpportunity": "<1-2 sentences on whether to connect with this author and why>"
+}`;
+
+    const userPrompt = buildUserPrompt(postText, authorName, authorRole, extraContext);
+
+    try {
+        const response = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+            },
+            body: JSON.stringify({
+                model: model,
+                max_tokens: 1024,
+                system: systemPrompt,
+                messages: [{ role: 'user', content: userPrompt }]
+            })
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error?.message || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        const rawText = data.content[0].text.trim();
+
+        // Parse JSON (strip markdown fences if present)
+        const jsonText = rawText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/, '');
+        const analysis = JSON.parse(jsonText);
+
+        currentAnalysis = {
+            analysis,
+            postText,
+            authorName,
+            authorRole,
+            timestamp: new Date()
+        };
+
+        renderAnalysis(analysis);
+        addToHistory(currentAnalysis);
+
+    } catch (err) {
+        showToast('Error: ' + err.message);
+        console.error(err);
+    } finally {
+        document.getElementById('loading-overlay').classList.remove('active');
+        document.getElementById('analyze-btn').disabled = false;
+    }
+}
+
+function buildUserPrompt(postText, authorName, authorRole, extraContext) {
+    let prompt = 'Please analyse the following LinkedIn post:\n\n';
+    if (authorName) prompt += `Author: ${authorName}`;
+    if (authorRole) prompt += ` — ${authorRole}`;
+    if (authorName || authorRole) prompt += '\n\n';
+    prompt += `Post:\n"${postText}"`;
+    if (extraContext) prompt += `\n\nAdditional context: ${extraContext}`;
+    return prompt;
+}
+
+// ─── Render Analysis ─────────────────────────────────────────
+function renderAnalysis(a) {
+    const score = a.relevanceScore;
+
+    // Score circle
+    const circle = document.getElementById('score-circle');
+    document.getElementById('score-num').textContent = score;
+    circle.className = 'score-circle ' +
+        (score >= 7 ? 'score-high' : score >= 4 ? 'score-mid' : 'score-low');
+
+    // Score headline
+    document.getElementById('score-headline').textContent = a.scoreSummary || '';
+
+    // Action tag
+    const actionTag = document.getElementById('action-tag');
+    actionTag.textContent = (actionIcon(a.recommendedAction) + ' ' + a.recommendedAction).trim();
+    actionTag.className = 'action-tag ' + actionClass(a.recommendedAction);
+
+    // Themes
+    const tagsEl = document.getElementById('theme-tags');
+    tagsEl.innerHTML = (a.themes || []).map(t => `<span class="theme-tag">${t}</span>`).join('');
+
+    // Text sections
+    document.getElementById('why-matters').textContent = a.whyItMatters || '';
+    document.getElementById('author-perspective').textContent = a.authorPerspective || '';
+    document.getElementById('engagement-strategy').textContent =
+        (a.engagementStrategy || '') + (a.actionRationale ? '\n\n' + a.actionRationale : '');
+    document.getElementById('suggested-comment').textContent = a.suggestedComment || '';
+
+    // Connection opportunity
+    const connOpp = a.connectionOpportunity || '';
+    document.getElementById('connection-opportunity').textContent = connOpp;
+    document.getElementById('connection-section').style.display = connOpp ? '' : 'none';
+
+    // Show output
+    document.getElementById('analysis-output').style.display = 'block';
+    document.getElementById('analysis-output').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function actionIcon(action) {
+    const icons = { 'Comment': '💬', 'Share': '🔁', 'Connect': '🤝', 'Save for Later': '🔖', 'Skip': '⏭' };
+    return icons[action] || '';
+}
+
+function actionClass(action) {
+    const classes = {
+        'Comment': 'action-comment',
+        'Share': 'action-share',
+        'Connect': 'action-connect',
+        'Save for Later': 'action-save',
+        'Skip': 'action-skip'
+    };
+    return classes[action] || 'action-skip';
+}
+
+// ─── Copy & Export ────────────────────────────────────────────
+function copyComment() {
+    const text = document.getElementById('suggested-comment').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+}
+
+function copyAllAnalysis() {
+    if (!currentAnalysis) return;
+    const a = currentAnalysis.analysis;
+    const text = formatAnalysisAsText(currentAnalysis);
+    navigator.clipboard.writeText(text).then(() => showToast('Analysis copied to clipboard'));
+}
+
+function exportReview() {
+    if (!currentAnalysis) return;
+    const text = formatAnalysisAsText(currentAnalysis);
+    downloadText(text, `linkedin-review-${Date.now()}.txt`);
+}
+
+function formatAnalysisAsText(entry) {
+    const { analysis: a, postText, authorName, authorRole, timestamp } = entry;
+    const ts = timestamp ? new Date(timestamp).toLocaleString() : '';
+    let out = `LinkedIn Post Review — AI + Human Connection Agent\n`;
+    out += `${'─'.repeat(50)}\n`;
+    if (ts) out += `Date: ${ts}\n`;
+    if (authorName) out += `Author: ${authorName}${authorRole ? ' — ' + authorRole : ''}\n`;
+    out += `\nPOST:\n${postText}\n\n`;
+    out += `${'─'.repeat(50)}\n`;
+    out += `RELEVANCE SCORE: ${a.relevanceScore}/10\n`;
+    out += `${a.scoreSummary}\n\n`;
+    out += `RECOMMENDED ACTION: ${a.recommendedAction}\n`;
+    out += `${a.actionRationale}\n\n`;
+    out += `THEMES DETECTED:\n${(a.themes || []).map(t => '• ' + t).join('\n')}\n\n`;
+    out += `WHY IT MATTERS:\n${a.whyItMatters}\n\n`;
+    out += `AUTHOR'S PERSPECTIVE:\n${a.authorPerspective}\n\n`;
+    out += `ENGAGEMENT STRATEGY:\n${a.engagementStrategy}\n\n`;
+    out += `SUGGESTED COMMENT:\n${a.suggestedComment}\n\n`;
+    if (a.connectionOpportunity) out += `CONNECTION OPPORTUNITY:\n${a.connectionOpportunity}\n`;
+    return out;
+}
+
+function downloadText(text, filename) {
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// ─── History ─────────────────────────────────────────────────
+function addToHistory(entry) {
+    sessionHistory.unshift(entry);
+    renderHistory();
+}
+
+function renderHistory() {
+    const list = document.getElementById('history-list');
+    const actions = document.getElementById('history-actions');
+
+    if (sessionHistory.length === 0) {
+        list.innerHTML = '<div class="history-empty">No posts reviewed yet.<br>Paste a post to get started.</div>';
+        actions.style.display = 'none';
+        return;
+    }
+
+    actions.style.display = 'flex';
+    list.innerHTML = sessionHistory.map((entry, i) => {
+        const a = entry.analysis;
+        const score = a.relevanceScore;
+        const scoreClass = score >= 7 ? 'score-high' : score >= 4 ? 'score-mid' : 'score-low';
+        const preview = entry.postText.slice(0, 100).replace(/\n/g, ' ');
+        const meta = entry.authorName ? entry.authorName + (entry.authorRole ? ' · ' + entry.authorRole : '') : '';
+        return `
+            <div class="history-item" onclick="loadFromHistory(${i})">
+                <span class="h-score score-circle ${scoreClass}" style="width:28px;height:28px;font-size:0.8rem;font-family:'Source Sans Pro',sans-serif;font-weight:600;float:right;border-radius:50%;display:inline-flex;align-items:center;justify-content:center">${score}</span>
+                ${meta ? `<div style="font-size:0.8rem;font-weight:600;color:var(--primary)">${meta}</div>` : ''}
+                <div class="h-preview">${preview}…</div>
+                <div class="h-meta">${actionIcon(a.recommendedAction)} ${a.recommendedAction} · ${new Date(entry.timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function loadFromHistory(i) {
+    const entry = sessionHistory[i];
+    document.getElementById('post-content').value = entry.postText;
+    document.getElementById('author-name').value = entry.authorName || '';
+    document.getElementById('author-role').value = entry.authorRole || '';
+    updateCharCount();
+    currentAnalysis = entry;
+    renderAnalysis(entry.analysis);
+}
+
+function clearHistory() {
+    sessionHistory = [];
+    currentAnalysis = null;
+    renderHistory();
+    document.getElementById('analysis-output').style.display = 'none';
+    showToast('History cleared');
+}
+
+function exportHistory() {
+    if (!sessionHistory.length) return;
+    const text = sessionHistory.map((entry, i) =>
+        `${'═'.repeat(60)}\nREVIEW ${i + 1} of ${sessionHistory.length}\n${'═'.repeat(60)}\n` +
+        formatAnalysisAsText(entry)
+    ).join('\n\n');
+    downloadText(text, `linkedin-reviews-session-${Date.now()}.txt`);
+    showToast('Session exported');
+}
+
+// ─── Clear ────────────────────────────────────────────────────
+function clearAnalysis() {
+    document.getElementById('post-content').value = '';
+    document.getElementById('author-name').value = '';
+    document.getElementById('author-role').value = '';
+    document.getElementById('extra-context').value = '';
+    document.getElementById('char-count').textContent = '0';
+    document.getElementById('analysis-output').style.display = 'none';
+    currentAnalysis = null;
+}
+
+// ─── Toast ────────────────────────────────────────────────────
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ─── Close modal on overlay click ────────────────────────────
+document.getElementById('settings-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeSettings();
+});
+</script>
+
+</body>
+</html>
