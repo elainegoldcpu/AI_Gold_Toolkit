@@ -1,0 +1,25 @@
+{
+  "name": "AI Gold Daily Alerts",
+  "short_name": "AI Alerts",
+  "description": "Daily LinkedIn engagement alerts for AI + Human Connection",
+  "start_url": "/AI_Gold_Toolkit/daily-alerts-agent.html",
+  "scope": "/AI_Gold_Toolkit/",
+  "display": "standalone",
+  "background_color": "#fefaec",
+  "theme_color": "#dd722a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
